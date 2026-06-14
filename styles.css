@@ -1,0 +1,655 @@
+/* ==========================================================================
+   CROCODILE DAY ADVENTURE - STYLESHEET (ENHANCED GAMEPLAY)
+   Centered Stats Header, Big Sprites, Lag-Free Tracking, Cartoon River
+   ========================================================================== */
+
+/* Design Tokens & Reset */
+:root {
+    --primary: #2e7d32;      /* Jungle Green */
+    --primary-light: #4caf50;/* Bright Green */
+    --primary-dark: #1b5e20; /* Canopy Green */
+    --secondary: #0288d1;    /* River Blue */
+    --secondary-light: #b3e5fc;/* Foam Blue */
+    --accent: #ffb300;       /* Sun Yellow */
+    --accent-coral: #ff7043; /* Coral Orange */
+    --bg-mint: #e8f5e9;      
+    --text-dark: #263238;    
+    --text-light: #ffffff;
+    --font-rounded: 'Fredoka', system-ui, -apple-system, sans-serif;
+    --shadow-premium: 0 16px 36px rgba(0, 0, 0, 0.12);
+    --transition-playful: all 0.4s cubic-bezier(0.175, 0.885, 0.32, 1.275);
+}
+
+* {
+    box-sizing: border-box;
+    margin: 0;
+    padding: 0;
+    -webkit-tap-highlight-color: transparent;
+}
+
+body {
+    font-family: var(--font-rounded);
+    background-color: #a8e6cf;
+    background-image: radial-gradient(circle at 20% 30%, #dcedc1 0%, #a8e6cf 100%);
+    color: var(--text-dark);
+    height: 100vh;
+    width: 100vw;
+    overflow: hidden;
+    display: flex;
+    justify-content: center;
+    align-items: center;
+}
+
+/* App locking box */
+#app-container {
+    width: 100%;
+    height: 100%;
+    max-width: 1120px;
+    max-height: 780px;
+    background: linear-gradient(180deg, #e0f7fa 0%, #e8f5e9 100%);
+    border: 8px solid #81c784;
+    border-radius: 36px;
+    box-shadow: 0 24px 60px rgba(0,0,0,0.15);
+    display: flex;
+    flex-direction: column;
+    position: relative;
+    overflow: hidden;
+}
+
+/* Ambient animated water layer in background */
+.ambient-river {
+    position: absolute;
+    bottom: -10%;
+    left: 0;
+    width: 200%;
+    height: 35%;
+    background: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 1200 120' preserveAspectRatio='none'%3E%3Cpath d='M0,60 C150,90 350,30 500,60 C650,90 850,30 1000,60 C1150,90 1300,60 1400,60 L1400,120 L0,120 Z' fill='%23b2ebf2' opacity='0.5'/%3E%3Cpath d='M0,80 C200,110 400,50 600,80 C800,110 1000,50 1200,80 L1200,120 L0,120 Z' fill='%2380deea' opacity='0.3'/%3E%3C/svg%3E") repeat-x;
+    animation: river-flow 16s linear infinite;
+    z-index: 1;
+    pointer-events: none;
+}
+
+@keyframes river-flow {
+    0% { transform: translateX(0); }
+    100% { transform: translateX(-50%); }
+}
+
+/* Global Header */
+#global-header {
+    height: 70px;
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    padding: 0 30px;
+    background: rgba(255, 255, 255, 0.65);
+    backdrop-filter: blur(8px);
+    border-bottom: 3px solid rgba(129, 199, 132, 0.3);
+    z-index: 10;
+}
+
+.app-title {
+    font-size: 1.8rem;
+    font-weight: 700;
+    color: var(--primary-dark);
+}
+
+.audio-controls {
+    display: flex;
+    gap: 12px;
+}
+
+/* Bubble buttons */
+.icon-btn {
+    width: 46px;
+    height: 46px;
+    border-radius: 50%;
+    border: 3px solid #81c784;
+    background: white;
+    color: var(--primary);
+    cursor: pointer;
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    box-shadow: 0 6px 12px rgba(0,0,0,0.08);
+    transition: var(--transition-playful);
+}
+
+.icon-btn:hover {
+    transform: scale(1.15) rotate(5deg);
+    background: var(--bg-mint);
+}
+
+.icon-btn:active {
+    transform: scale(0.95);
+}
+
+.icon {
+    width: 24px;
+    height: 24px;
+}
+
+.hidden {
+    display: none !important;
+}
+
+/* Main Viewport & Slide Deck */
+#slide-viewport {
+    flex: 1;
+    position: relative;
+    z-index: 2;
+}
+
+.slide {
+    position: absolute;
+    top: 0;
+    left: 0;
+    width: 100%;
+    height: 100%;
+    opacity: 0;
+    visibility: hidden;
+    pointer-events: none;
+    transition: opacity 0.5s ease, visibility 0.5s ease;
+    padding: 24px 30px;
+}
+
+.slide.active {
+    opacity: 1;
+    visibility: visible;
+    pointer-events: auto;
+}
+
+/* Slide Layouts */
+.slide-content {
+    width: 100%;
+    height: 100%;
+    display: flex;
+    gap: 24px;
+}
+
+.split-layout {
+    flex-direction: row;
+}
+
+.full-layout {
+    flex-direction: column;
+}
+
+.visual-pane, .content-pane {
+    flex: 1;
+    display: flex;
+    flex-direction: column;
+    gap: 20px;
+    position: relative;
+}
+
+.justify-center {
+    justify-content: center;
+}
+
+/* Glassmorphic Cards */
+.glass-card {
+    background: rgba(255, 255, 255, 0.88);
+    backdrop-filter: blur(12px);
+    border: 4px solid white;
+    border-radius: 28px;
+    padding: 24px;
+    box-shadow: var(--shadow-premium);
+}
+
+/* Start Scene Layout */
+.start-layout {
+    flex-direction: column;
+    justify-content: center;
+    align-items: center;
+    text-align: center;
+    gap: 28px;
+}
+
+.start-crocodile-container {
+    width: 180px;
+    height: 180px;
+    display: flex;
+    justify-content: center;
+    align-items: center;
+}
+
+.cute-croc {
+    width: 100%;
+    height: 100%;
+    filter: drop-shadow(0 8px 16px rgba(0,0,0,0.1));
+}
+
+.animated-croc {
+    animation: croc-bounce 3s ease-in-out infinite alternate;
+    transform-origin: center bottom;
+}
+
+@keyframes croc-bounce {
+    0% { transform: translateY(0) scaleY(1); }
+    50% { transform: translateY(-10px) scaleY(1.02) rotate(2deg); }
+    100% { transform: translateY(0) scaleY(1) rotate(-2deg); }
+}
+
+.start-bubble {
+    max-width: 600px;
+    border-color: #c8e6c9;
+}
+
+.start-bubble h2 {
+    font-size: 2.2rem;
+    color: var(--primary-dark);
+    margin-bottom: 12px;
+}
+
+.story-text {
+    font-size: 1.35rem;
+    line-height: 1.6;
+    color: #37474f;
+    font-weight: 600;
+}
+
+/* Primary buttons with spring bounce */
+.primary-btn, .pulse-btn {
+    font-family: var(--font-rounded);
+    font-size: 1.4rem;
+    font-weight: 700;
+    color: white;
+    background: linear-gradient(135deg, #ff9800 0%, #ff5722 100%);
+    border: 4px solid white;
+    border-radius: 20px;
+    padding: 16px 36px;
+    cursor: pointer;
+    box-shadow: 0 10px 20px rgba(255, 87, 34, 0.3);
+    transition: var(--transition-playful);
+}
+
+.primary-btn:hover, .pulse-btn:hover {
+    transform: scale(1.08) translateY(-3px);
+    box-shadow: 0 14px 28px rgba(255, 87, 34, 0.4);
+}
+
+.primary-btn:active, .pulse-btn:active {
+    transform: scale(0.95);
+}
+
+.pulse-btn {
+    animation: button-pulse 2s infinite;
+}
+
+@keyframes button-pulse {
+    0% { box-shadow: 0 0 0 0 rgba(255, 87, 34, 0.7); }
+    70% { box-shadow: 0 0 0 15px rgba(255, 87, 34, 0); }
+    100% { box-shadow: 0 0 0 0 rgba(255, 87, 34, 0); }
+}
+
+/* Scene 1: Ancient Slide Stacked Images */
+.card-stack {
+    width: 100%;
+    height: 100%;
+    position: relative;
+    display: flex;
+    justify-content: center;
+    align-items: center;
+}
+
+.image-frame {
+    width: 70%;
+    height: 75%;
+    border: 6px solid white;
+    border-radius: 24px;
+    box-shadow: var(--shadow-premium);
+    overflow: hidden;
+    position: absolute;
+    background: #fff;
+    transition: var(--transition-playful);
+}
+
+.ancient-landscape {
+    transform: rotate(-6deg) translate(-20px, -10px);
+    z-index: 1;
+}
+
+.ancient-fossil {
+    transform: rotate(6deg) translate(20px, 10px);
+    z-index: 2;
+}
+
+.image-frame:hover {
+    z-index: 10;
+    transform: scale(1.05) rotate(0deg);
+}
+
+.story-img {
+    width: 100%;
+    height: 100%;
+    object-fit: cover;
+}
+
+.image-badge {
+    position: absolute;
+    bottom: 12px;
+    right: 12px;
+    background: rgba(46, 125, 50, 0.9);
+    color: white;
+    padding: 6px 14px;
+    font-size: 0.9rem;
+    font-weight: 700;
+    border-radius: 12px;
+    border: 2px solid white;
+}
+
+.title-card {
+    border-color: var(--primary-light);
+    display: flex;
+    flex-direction: column;
+    gap: 8px;
+}
+
+.slide-title-large {
+    font-size: 2rem;
+    color: var(--primary-dark);
+}
+
+/* Scene 2: Simple Picture Exploration Map */
+.exploration-area {
+    width: 100%;
+    height: 100%;
+    flex: 1;
+    position: relative;
+    border-radius: 28px;
+    border: 6px solid white;
+    box-shadow: var(--shadow-premium);
+    overflow: hidden;
+    background: white;
+}
+
+.bg-river-img {
+    width: 100%;
+    height: 100%;
+    object-fit: cover;
+}
+
+.clean-image-label {
+    position: absolute;
+    bottom: 20px;
+    right: 20px;
+    background: rgba(0, 0, 0, 0.65);
+    color: white;
+    padding: 8px 20px;
+    border-radius: 20px;
+    font-size: 1.25rem;
+    font-weight: 600;
+    pointer-events: none;
+    z-index: 3;
+}
+
+/* Scene 3: Runner Mini-game Canvas Layout */
+.game-header {
+    display: flex;
+    justify-content: center; /* Center horizontally above the game board */
+    align-items: center;
+    gap: 32px; /* Add breathing space between hearts and timer */
+    width: 100%;
+    margin-bottom: 12px; /* Center-placed directly above */
+    z-index: 10;
+}
+
+.health-board, .timer-board {
+    padding: 10px 28px;
+    border-radius: 18px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    box-shadow: 0 4px 10px rgba(0,0,0,0.06);
+}
+
+.health-board {
+    border-color: var(--accent-coral);
+    font-size: 1.5rem;
+}
+
+.timer-board {
+    border-color: var(--accent);
+}
+
+.timer-board span {
+    font-size: 1.3rem;
+    font-weight: 700;
+    color: #e65100;
+}
+
+/* River Runner Container */
+.game-river-container.runner-mode {
+    flex: 1;
+    border-radius: 28px;
+    border: 6px solid white;
+    position: relative;
+    overflow: hidden;
+    box-shadow: var(--shadow-premium);
+    cursor: pointer;
+    background: #4fc3f7; /* Clear cartoon water fallback */
+}
+
+.scrolling-water {
+    position: absolute;
+    top: 0;
+    left: 0;
+    width: 200%;
+    height: 100%;
+    background: url('assets/game_river_bg.png') repeat-x;
+    background-size: auto 100%;
+    animation: scroll-river-bg 12s linear infinite;
+    z-index: 1;
+}
+
+@keyframes scroll-river-bg {
+    0% { transform: translateX(0); }
+    100% { transform: translateX(-50%); }
+}
+
+.murky-overlay-runner {
+    position: absolute;
+    top: 0;
+    left: 0;
+    width: 100%;
+    height: 100%;
+    background-color: rgba(62, 100, 75, 0.3); /* Subtle murky green wash */
+    mix-blend-mode: color;
+    z-index: 2;
+    pointer-events: none;
+}
+
+/* Dynamic Estuary/Clean overlay (fades in slowly towards the end) */
+.estuary-overlay {
+    position: absolute;
+    top: 0;
+    left: 0;
+    width: 100%;
+    height: 100%;
+    background: linear-gradient(135deg, rgba(224,242,241,0.3) 0%, rgba(128,222,234,0.3) 100%);
+    z-index: 4;
+    opacity: 0;
+    pointer-events: none;
+    transition: opacity 3s ease;
+}
+
+/* Crocodile Player Sprite */
+.player-sprite {
+    position: absolute;
+    width: 180px; /* ENHANCED: Bigger size */
+    height: auto;
+    left: 8%;
+    top: 50%;
+    transform: translateY(-50%);
+    z-index: 5;
+    /* transition: top removed to prevent lag and enable instant follow */
+    filter: drop-shadow(0 6px 12px rgba(0,0,0,0.25));
+    user-select: none;
+    pointer-events: none;
+}
+
+/* Collision Flash animation */
+@keyframes hit-flash {
+    0%, 100% { opacity: 1; filter: drop-shadow(0 0 16px #ff1744) brightness(1.2); }
+    50% { opacity: 0.3; filter: none; }
+}
+
+.player-sprite.hit {
+    animation: hit-flash 0.15s ease infinite alternate;
+}
+
+/* Obstacle Sprites spawned by game engine */
+.obstacle-sprite {
+    position: absolute;
+    width: 80px; /* ENHANCED: Bigger size */
+    height: auto;
+    z-index: 6;
+    filter: drop-shadow(0 6px 10px rgba(0,0,0,0.3));
+    user-select: none;
+    pointer-events: none;
+    animation: spin-trash 6s linear infinite;
+    transform-origin: center center;
+}
+
+@keyframes spin-trash {
+    from { transform: rotate(0deg); }
+    to { transform: rotate(360deg); }
+}
+
+/* Game Over / Win overlays */
+.win-modal-overlay {
+    position: absolute;
+    top: 0;
+    left: 0;
+    width: 100%;
+    height: 100%;
+    background: rgba(0, 0, 0, 0.65);
+    backdrop-filter: blur(8px);
+    z-index: 100;
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    padding: 24px;
+}
+
+.win-card {
+    max-width: 560px;
+    text-align: center;
+    border-color: var(--accent);
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    gap: 16px;
+    transform: scale(0.9);
+}
+
+.animate-pop {
+    animation: pop-in 0.5s cubic-bezier(0.175, 0.885, 0.32, 1.275) forwards;
+}
+
+@keyframes pop-in {
+    100% { transform: scale(1); }
+}
+
+.win-emoji {
+    font-size: 3.5rem;
+    animation: bounce 1s infinite alternate;
+}
+
+@keyframes bounce {
+    0% { transform: translateY(0); }
+    100% { transform: translateY(-15px); }
+}
+
+.win-prompt {
+    border-color: var(--primary-light);
+    background: #e8f5e9;
+    padding: 16px 20px;
+}
+
+.win-actions {
+    display: flex;
+    justify-content: center;
+    width: 100%;
+}
+
+/* Confetti particles */
+.confetti-particle {
+    position: absolute;
+    width: 10px;
+    height: 10px;
+    z-index: 120;
+    pointer-events: none;
+    border-radius: 50%;
+    animation: confetti-fall 3s linear forwards;
+}
+
+@keyframes confetti-fall {
+    0% { transform: translateY(-20px) rotate(0deg); opacity: 1; }
+    100% { transform: translateY(800px) rotate(360deg); opacity: 0; }
+}
+
+/* Global Navigation Footers */
+#global-nav {
+    height: 80px;
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    padding: 0 30px;
+    background: rgba(255, 255, 255, 0.85);
+    border-top: 3px solid rgba(129, 199, 132, 0.3);
+    z-index: 10;
+}
+
+.wood-btn {
+    font-family: var(--font-rounded);
+    font-size: 1.25rem;
+    font-weight: 700;
+    color: #5d4037;
+    background: linear-gradient(180deg, #d7ccc8 0%, #a1887f 100%);
+    border: 3px solid #5d4037;
+    border-radius: 16px;
+    padding: 10px 24px;
+    cursor: pointer;
+    box-shadow: 0 6px 0 #5d4037, 0 8px 16px rgba(0,0,0,0.1);
+    transition: transform 0.15s ease, box-shadow 0.15s ease;
+}
+
+.wood-btn:hover:not(:disabled) {
+    transform: translateY(-2px);
+    box-shadow: 0 8px 0 #5d4037, 0 10px 20px rgba(0,0,0,0.15);
+}
+
+.wood-btn:active:not(:disabled) {
+    transform: translateY(4px);
+    box-shadow: 0 2px 0 #5d4037, 0 4px 8px rgba(0,0,0,0.1);
+}
+
+.wood-btn:disabled {
+    opacity: 0.5;
+    cursor: not-allowed;
+    box-shadow: none;
+    transform: none;
+}
+
+/* Navigation dots */
+#progress-indicator {
+    display: flex;
+    gap: 10px;
+}
+
+#progress-indicator .dot {
+    width: 16px;
+    height: 16px;
+    border-radius: 50%;
+    background: #cfd8dc;
+    border: 2px solid white;
+    box-shadow: 0 2px 4px rgba(0,0,0,0.08);
+    transition: var(--transition-playful);
+}
+
+#progress-indicator .dot.active {
+    background: var(--primary-light);
+    transform: scale(1.3);
+    box-shadow: 0 0 8px var(--primary-light);
+}

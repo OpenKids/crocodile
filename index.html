@@ -1,0 +1,170 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>World Crocodile Day Adventure!</title>
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Fredoka:wght@300..700&display=swap" rel="stylesheet">
+    <link rel="stylesheet" href="styles.css">
+</head>
+<body>
+    <div id="app-container">
+        <!-- Background Ambient River Layer -->
+        <div class="ambient-river"></div>
+
+        <!-- Global Header -->
+        <header id="global-header">
+            <h1 class="app-title">🐊 Happy World Crocodile Day!</h1>
+            <div class="audio-controls">
+                <button id="btn-sound" class="icon-btn" title="Toggle Sound Effects">
+                    <svg class="icon icon-sound-on" viewBox="0 0 24 24">
+                        <path fill="currentColor" d="M14,3.23V5.29C16.89,6.15 19,8.83 19,12C19,15.17 16.89,17.85 14,18.71V20.77C18,19.86 21,16.28 21,12C21,7.72 18,4.14 14,3.23M16.5,12C16.5,10.23 15.5,8.71 14,7.97V16C15.5,15.29 16.5,13.77 16.5,12M3,9V15H7L12,20V4L7,9H3Z" />
+                    </svg>
+                    <svg class="icon icon-sound-off hidden" viewBox="0 0 24 24">
+                        <path fill="currentColor" d="M12,4L9.91,6.09L12,8.18M4.27,3L3,4.27L7.73,9H3V15H7L12,20V13.27L16.25,17.53C15.58,18.04 14.83,18.46 14,18.7V20.77C15.38,20.44 16.63,19.79 17.7,18.9L20.73,21.93L22,20.66L4.27,3M19,12C19,12.94 18.8,13.82 18.46,14.64L19.97,16.15C20.62,14.91 21,13.5 21,12C21,7.72 18,4.14 14,3.23V5.29C16.89,6.15 19,8.83 19,12M16.5,12C16.5,11.23 16.18,10.53 15.66,10.03L17.18,11.55C17.2,11.7 17.2,11.85 17.2,12C17.2,13.77 16.2,15.29 14.7,16V18.12C16.89,17.27 18.4,14.93 18.4,12H16.5Z" />
+                    </svg>
+                </button>
+            </div>
+        </header>
+
+        <!-- Main Presentation / Play Area -->
+        <main id="slide-viewport">
+            
+            <!-- SCENE 0: START SCENE -->
+            <section id="scene-start" class="slide active">
+                <div class="slide-content start-layout">
+                    <div class="logo-area">
+                        <div class="start-crocodile-container">
+                            <svg class="cute-croc animated-croc" viewBox="0 0 100 100">
+                                <path d="M10,60 C20,40 50,40 70,60 C80,68 90,65 95,50 C92,75 70,85 50,85 C25,85 12,75 10,60 Z" fill="#4CAF50" />
+                                <path d="M12,58 Q15,53 18,58 Q22,53 25,58 Q30,53 35,58" stroke="#388E3C" stroke-width="3" fill="none" />
+                                <ellipse cx="40" cy="45" rx="22" ry="18" fill="#4CAF50" />
+                                <path d="M45,40 C65,40 70,50 45,55 Z" fill="#4CAF50" />
+                                <circle cx="62" cy="46" r="1.5" fill="#2E7D32" />
+                                <circle cx="32" cy="32" r="6" fill="white" />
+                                <circle cx="32" cy="32" r="3" fill="black" />
+                                <circle cx="48" cy="32" r="6" fill="white" />
+                                <circle cx="48" cy="32" r="3" fill="black" />
+                                <circle cx="28" cy="46" r="3.5" fill="#FF8A80" opacity="0.7" />
+                                <circle cx="52" cy="46" r="3.5" fill="#FF8A80" opacity="0.7" />
+                                <path d="M40,50 Q48,55 58,48" stroke="white" stroke-width="2" fill="none" stroke-linecap="round" />
+                                <polygon points="46,51 48,54 50,51" fill="white" />
+                                <polygon points="52,50 54,53 56,50" fill="white" />
+                            </svg>
+                        </div>
+                    </div>
+                    <div class="start-bubble glass-card">
+                        <h2>World Crocodile Day!</h2>
+                        <p class="story-text">Let's learn about crocodiles and play a fun river game!</p>
+                    </div>
+                    <button id="btn-begin" class="pulse-btn primary-btn">Begin Adventure ➔</button>
+                </div>
+            </section>
+
+            <!-- SCENE 1: ANCIENT CROCODILE -->
+            <section id="scene-ancient" class="slide">
+                <div class="slide-content split-layout">
+                    <div class="visual-pane">
+                        <div class="card-stack">
+                            <div class="image-frame ancient-landscape">
+                                <img src="assets/ancient_fossil.jpg" alt="Ancient Plant Fossil" class="story-img">
+                                <span class="image-badge">Fossil Leaf</span>
+                            </div>
+                            <div class="image-frame ancient-fossil">
+                                <img src="assets/fossil_teeth.jpg" alt="Dinosaur Era Crocodile Teeth" class="story-img">
+                                <span class="image-badge">Fossil Teeth</span>
+                            </div>
+                        </div>
+                    </div>
+                    <div class="content-pane justify-center text-center">
+                        <div class="glass-card title-card">
+                            <h2 class="slide-title-large">Ancient Crocodiles</h2>
+                            <p class="story-text">Crocodiles have lived on Earth since the dinosaur era!</p>
+                        </div>
+                    </div>
+                </div>
+            </section>
+
+            <!-- SCENE 2: CROCODILE LOOK (SIMPLE PICTURE DISPLAY) -->
+            <section id="scene-look" class="slide">
+                <div class="slide-content full-layout">
+                    <div class="exploration-area">
+                        <!-- Simple, clean image displaying the complete crocodile -->
+                        <img src="assets/crocodile_side.jpg" alt="Complete Crocodile Side View" class="bg-river-img">
+                        <div class="clean-image-label">Nile Crocodile</div>
+                    </div>
+                </div>
+            </section>
+
+            <!-- SCENE 3: FINAL MINI GAME (RIVER RUNNER) -->
+            <section id="scene-game" class="slide">
+                <div class="slide-content game-layout">
+                    <div class="game-header">
+                        <div class="health-board glass-card">
+                            <span id="hearts-container">❤️ ❤️ ❤️</span>
+                        </div>
+                        <div class="timer-board glass-card">
+                            <span>⏱️ Time Left: <strong id="game-timer">30</strong>s</span>
+                        </div>
+                    </div>
+
+                    <!-- Runner Game River Area -->
+                    <div id="game-river" class="game-river-container runner-mode">
+                        <!-- Scrolling background overlays -->
+                        <div class="scrolling-water"></div>
+                        <div class="murky-overlay-runner"></div>
+
+                        <!-- Player Crocodile Sprite -->
+                        <img id="runner-player" src="assets/game_crocodile.png" alt="Swimming Crocodile player" class="player-sprite">
+                        
+                        <!-- Obstacles will spawn here dynamically -->
+
+                        <!-- Estuary/Clean Zone background layer (fades in at the end) -->
+                        <div class="estuary-overlay"></div>
+                    </div>
+
+                    <!-- Game Over Modal Overlay -->
+                    <div id="game-over-overlay" class="win-modal-overlay hidden">
+                        <div class="win-card glass-card animate-pop">
+                            <div class="win-emoji">😢🩹</div>
+                            <h2>Game Over</h2>
+                            <p class="story-text">Let's try again and stay safe!</p>
+                            <div class="win-actions">
+                                <button id="btn-restart" class="primary-btn">Try Again 🔁</button>
+                            </div>
+                        </div>
+                    </div>
+
+                    <!-- Game Win Modal Overlay -->
+                    <div id="game-win-overlay" class="win-modal-overlay hidden">
+                        <div class="win-card glass-card animate-pop">
+                            <div class="win-emoji">🥳🏆🎉</div>
+                            <h2>You Win!</h2>
+                            <p class="story-text">The crocodile swam safely to the clean estuary!</p>
+                            <div class="win-actions">
+                                <button id="btn-replay" class="primary-btn">Play Again 🔁</button>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </section>
+        </main>
+
+        <!-- Global Navigation Buttons -->
+        <footer id="global-nav">
+            <button id="btn-prev" class="nav-btn wood-btn hidden" disabled>◀ Back</button>
+            <div id="progress-indicator">
+                <span class="dot active"></span>
+                <span class="dot"></span>
+                <span class="dot"></span>
+                <span class="dot"></span>
+            </div>
+            <button id="btn-next" class="nav-btn wood-btn">Next ▶</button>
+        </footer>
+    </div>
+
+    <script src="app.js"></script>
+</body>
+</html>
