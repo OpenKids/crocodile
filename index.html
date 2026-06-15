@@ -105,24 +105,20 @@
                         <div class="health-board glass-card">
                             <span id="hearts-container">❤️ ❤️ ❤️</span>
                         </div>
+                        <div class="clean-progress-board glass-card">
+                            <span class="progress-title">🧹 Clean River:</span>
+                            <div class="progress-bar-outer">
+                                <div id="progress-bar-inner" style="width: 0%;"></div>
+                            </div>
+                        </div>
                         <div class="timer-board glass-card">
-                            <span>⏱️ Time Left: <strong id="game-timer">30</strong>s</span>
+                            <span>⏱️ Time: <strong id="game-timer">30</strong>s</span>
                         </div>
                     </div>
 
-                    <!-- Runner Game River Area -->
-                    <div id="game-river" class="game-river-container runner-mode">
-                        <!-- Scrolling background overlays -->
-                        <div class="scrolling-water"></div>
-                        <div class="murky-overlay-runner"></div>
-
-                        <!-- Player Crocodile Sprite -->
-                        <img id="runner-player" src="assets/game_crocodile.png" alt="Swimming Crocodile player" class="player-sprite">
-                        
-                        <!-- Obstacles will spawn here dynamically -->
-
-                        <!-- Estuary/Clean Zone background layer (fades in at the end) -->
-                        <div class="estuary-overlay"></div>
+                    <!-- Clean River Rescue Game Canvas Container -->
+                    <div id="game-river" class="game-river-container">
+                        <canvas id="game-canvas"></canvas>
                     </div>
 
                     <!-- Game Over Modal Overlay -->
@@ -130,7 +126,7 @@
                         <div class="win-card glass-card animate-pop">
                             <div class="win-emoji">😢🩹</div>
                             <h2>Game Over</h2>
-                            <p class="story-text">Let's try again and stay safe!</p>
+                            <p class="story-text">Keep trying! We can save the river!</p>
                             <div class="win-actions">
                                 <button id="btn-restart" class="primary-btn">Try Again 🔁</button>
                             </div>
@@ -141,8 +137,8 @@
                     <div id="game-win-overlay" class="win-modal-overlay hidden">
                         <div class="win-card glass-card animate-pop">
                             <div class="win-emoji">🥳🏆🎉</div>
-                            <h2>You Win!</h2>
-                            <p class="story-text">The crocodile swam safely to the clean estuary!</p>
+                            <h2>You Saved the River!</h2>
+                            <p class="story-text">Thank you for making the river clean and safe for everyone!</p>
                             <div class="win-actions">
                                 <button id="btn-replay" class="primary-btn">Play Again 🔁</button>
                             </div>

@@ -208,119 +208,197 @@ function updateDOMScene(index) {
     }
 }
 
-// --- SCENE 3: RIVER RUNNER GAME ENGINE ---
+// --- SCENE 3: RIVER CLEANUP CANVAS GAME ENGINE ---
 const gameRiver = document.getElementById('game-river');
-const player = document.getElementById('runner-player');
+const gameCanvas = document.getElementById('game-canvas');
+const ctx = gameCanvas.getContext('2d');
 const heartsContainer = document.getElementById('hearts-container');
 const gameTimerLabel = document.getElementById('game-timer');
+const progressBarInner = document.getElementById('progress-bar-inner');
 const gameOverOverlay = document.getElementById('game-over-overlay');
 const gameWinOverlay = document.getElementById('game-win-overlay');
-const estuaryOverlay = document.querySelector('.estuary-overlay');
 
+// Game constants
+const GAME_WIDTH = 1000;
+const GAME_HEIGHT = 550;
+
+// Game state variables
 let gameActive = false;
 let hearts = 3;
-let timeLeft = 30;
-let obstacles = [];
-let spawnIntervalId = null;
-let countdownIntervalId = null;
-let gameAnimationFrameId = null;
+let timeLeft = 45; // Generous time limit
+let cleanliness = 0; // Starts dirty (0%), ends clean (100%)
 let isInvulnerable = false;
+let invulnerableTime = 0;
 
-// Transparent generated png assets
-const OBSTACLE_ASSETS = [
-    'assets/game_bottle.png',
-    'assets/game_can.png',
-    'assets/game_bag.png'
-];
+// Entities & Particle systems
+let player = { x: 150, y: 275, angle: 0, width: 140, height: 60 };
+let entities = [];
+let particles = [];
+let floatingTexts = [];
+let ambientBubbles = [];
+
+// Pointer/control tracking in virtual GAME coordinates
+let pointerX = 150;
+let pointerY = 275;
+
+// Timing controls
+let lastSpawnTime = 0;
+let gameTimerId = null;
+let gameAnimationFrameId = null;
+
+// Preloaded images
+const images = {
+    player: new Image(),
+    bottle: new Image(),
+    can: new Image(),
+    bag: new Image(),
+    riverBg: new Image()
+};
+images.player.src = 'assets/game_crocodile.png';
+images.bottle.src = 'assets/game_bottle.png';
+images.can.src = 'assets/game_can.png';
+images.bag.src = 'assets/game_bag.png';
+images.riverBg.src = 'assets/game_river_bg.png';
+
+let bgScrollX = 0;
+
+// Setup canvas resolution and resizing
+let canvasWidth = 800;
+let canvasHeight = 450;
+
+function resizeCanvas() {
+    if (!gameRiver) return;
+    const rect = gameRiver.getBoundingClientRect();
+    const dpr = window.devicePixelRatio || 1;
+    gameCanvas.width = rect.width * dpr;
+    gameCanvas.height = rect.height * dpr;
+    canvasWidth = rect.width;
+    canvasHeight = rect.height;
+}
+
+// Translate mouse/touch inputs into virtual coordinates
+function updatePointerFromClient(clientX, clientY) {
+    const rect = gameCanvas.getBoundingClientRect();
+    const scaleX = GAME_WIDTH / rect.width;
+    const scaleY = GAME_HEIGHT / rect.height;
+    pointerX = (clientX - rect.left) * scaleX;
+    pointerY = (clientY - rect.top) * scaleY;
+}
+
+// Interaction listeners
+gameCanvas.addEventListener('mousemove', (e) => {
+    updatePointerFromClient(e.clientX, e.clientY);
+});
+gameCanvas.addEventListener('touchmove', (e) => {
+    if (e.touches.length > 0) {
+        updatePointerFromClient(e.touches[0].clientX, e.touches[0].clientY);
+    }
+});
+gameCanvas.addEventListener('mousedown', (e) => {
+    initAudio();
+    updatePointerFromClient(e.clientX, e.clientY);
+});
+gameCanvas.addEventListener('touchstart', (e) => {
+    initAudio();
+    if (e.touches.length > 0) {
+        updatePointerFromClient(e.touches[0].clientX, e.touches[0].clientY);
+    }
+});
+
+// Particles helper
+function spawnParticles(x, y, color, count = 10) {
+    for (let i = 0; i < count; i++) {
+        particles.push({
+            x: x,
+            y: y,
+            vx: (Math.random() - 0.5) * 6,
+            vy: (Math.random() - 0.5) * 6,
+            radius: Math.random() * 5 + 2,
+            color: color,
+            alpha: 1,
+            decay: Math.random() * 0.03 + 0.02
+        });
+    }
+}
+
+// Floating texts helper
+function spawnFloatingText(x, y, text, color) {
+    floatingTexts.push({
+        x: x,
+        y: y,
+        text: text,
+        color: color,
+        alpha: 1,
+        vy: -1.5,
+        decay: 0.02
+    });
+}
 
 function startGameEngine() {
-    stopGameEngine(); // Clean start
+    stopGameEngine();
     
+    resizeCanvas();
+    window.addEventListener('resize', resizeCanvas);
+
     gameActive = true;
     hearts = 3;
-    timeLeft = 30;
-    obstacles = [];
+    timeLeft = 45;
+    cleanliness = 0;
     isInvulnerable = false;
+    invulnerableTime = 0;
     
-    gameTimerLabel.innerText = timeLeft;
+    player.x = 150;
+    player.y = 275;
+    player.angle = 0;
+    pointerX = 150;
+    pointerY = 275;
+    
+    entities = [];
+    particles = [];
+    floatingTexts = [];
+    ambientBubbles = [];
+    
+    // Spawn initial ambient bubbles
+    for (let i = 0; i < 20; i++) {
+        ambientBubbles.push({
+            x: Math.random() * GAME_WIDTH,
+            y: Math.random() * GAME_HEIGHT,
+            speed: Math.random() * 1.5 + 0.5,
+            radius: Math.random() * 6 + 2,
+            opacity: Math.random() * 0.4 + 0.1
+        });
+    }
+    
     updateHeartsUI();
+    updateProgressBarUI();
+    gameTimerLabel.innerText = timeLeft;
     
-    // Hide modals
     gameOverOverlay.classList.add('hidden');
     gameWinOverlay.classList.add('hidden');
     
-    // Reset overlays
-    estuaryOverlay.style.opacity = 0;
-    player.style.top = "50%";
-    player.classList.remove('hit');
-    
-    // Clear old trash elements
-    const oldTrash = gameRiver.querySelectorAll('.obstacle-sprite');
-    oldTrash.forEach(item => item.remove());
-    
-    // Start game intervals
-    spawnIntervalId = setInterval(spawnObstacle, 1100);
-    countdownIntervalId = setInterval(updateGameTimer, 1000);
+    gameTimerId = setInterval(updateGameTimer, 1000);
+    lastSpawnTime = Date.now();
     
     gameAnimationFrameId = requestAnimationFrame(gameLoop);
 }
 
 function stopGameEngine() {
     gameActive = false;
-    
-    clearInterval(spawnIntervalId);
-    clearInterval(countdownIntervalId);
+    clearInterval(gameTimerId);
     cancelAnimationFrame(gameAnimationFrameId);
-    
-    const trash = gameRiver.querySelectorAll('.obstacle-sprite');
-    trash.forEach(item => item.remove());
-    obstacles = [];
+    window.removeEventListener('resize', resizeCanvas);
 }
 
-// Smooth vertical player movement on mouse/touch interaction
-function handlePlayerMovement(clientY) {
-    if (!gameActive) return;
-    const rect = gameRiver.getBoundingClientRect();
-    const relativeY = clientY - rect.top;
-    
-    // Convert to percentage and bound it (12% to 88% range)
-    let targetPercentageY = (relativeY / rect.height) * 100;
-    targetPercentageY = Math.max(12, Math.min(88, targetPercentageY));
-    
-    player.style.top = `${targetPercentageY}%`;
-}
-
-// Event Listeners for Player Control
-gameRiver.addEventListener('mousemove', (e) => {
-    handlePlayerMovement(e.clientY);
-});
-gameRiver.addEventListener('touchmove', (e) => {
-    if (e.touches.length > 0) {
-        handlePlayerMovement(e.touches[0].clientY);
-    }
-});
-gameRiver.addEventListener('mousedown', (e) => {
-    initAudio();
-    handlePlayerMovement(e.clientY);
-});
-gameRiver.addEventListener('touchstart', (e) => {
-    initAudio();
-    if (e.touches.length > 0) {
-        handlePlayerMovement(e.touches[0].clientY);
-    }
-});
-
-// Render hearts
 function updateHeartsUI() {
     let heartsHTML = "";
     for (let i = 0; i < 3; i++) {
-        if (i < hearts) {
-            heartsHTML += "❤️ ";
-        } else {
-            heartsHTML += "🤍 ";
-        }
+        heartsHTML += (i < hearts) ? "❤️ " : "🤍 ";
     }
     heartsContainer.innerHTML = heartsHTML.trim();
+}
+
+function updateProgressBarUI() {
+    progressBarInner.style.width = `${cleanliness}%`;
 }
 
 function updateGameTimer() {
@@ -328,107 +406,195 @@ function updateGameTimer() {
     timeLeft--;
     gameTimerLabel.innerText = timeLeft;
     
-    // Estuary fade effect
-    const cleanProgress = (30 - timeLeft) / 30;
-    estuaryOverlay.style.opacity = cleanProgress * 0.75;
-    
     if (timeLeft <= 0) {
-        triggerVictory();
+        if (cleanliness >= 100) {
+            triggerVictory();
+        } else {
+            triggerGameOver();
+        }
     }
 }
 
-// Spawn new trash obstacle
-function spawnObstacle() {
-    if (!gameActive) return;
+// Spawns items (trash or friendly river animals)
+function spawnEntity() {
+    const isTrash = Math.random() < 0.7;
+    const y = 50 + Math.random() * (GAME_HEIGHT - 100);
+    const vx = -(Math.random() * 2 + 2.5);
     
-    const imgElement = document.createElement('img');
-    const assetIndex = Math.floor(Math.random() * OBSTACLE_ASSETS.length);
-    imgElement.src = OBSTACLE_ASSETS[assetIndex];
-    imgElement.className = 'obstacle-sprite';
-    
-    const topPercentage = 15 + Math.random() * 70;
-    const speed = 0.35 + Math.random() * 0.3;
-    
-    imgElement.style.top = `${topPercentage}%`;
-    imgElement.style.left = `100%`;
-    
-    gameRiver.appendChild(imgElement);
-    
-    obstacles.push({
-        element: imgElement,
-        x: 100,
-        y: topPercentage,
-        speed: speed
-    });
+    if (isTrash) {
+        const trashTypes = ['bottle', 'can', 'bag'];
+        const type = trashTypes[Math.floor(Math.random() * trashTypes.length)];
+        entities.push({
+            type: 'trash',
+            subType: type,
+            x: GAME_WIDTH + 50,
+            y: y,
+            vx: vx,
+            vy: (Math.random() - 0.5) * 0.5,
+            width: 50,
+            height: 50,
+            angle: Math.random() * Math.PI,
+            rotSpeed: (Math.random() - 0.5) * 0.05
+        });
+    } else {
+        const friendTypes = ['fish', 'turtle'];
+        const type = friendTypes[Math.floor(Math.random() * friendTypes.length)];
+        entities.push({
+            type: 'friend',
+            subType: type,
+            x: GAME_WIDTH + 50,
+            y: y,
+            vx: vx * 1.2, // swim slightly faster
+            vy: Math.sin(y) * 0.5,
+            width: type === 'fish' ? 45 : 60,
+            height: type === 'fish' ? 30 : 45,
+            wiggle: 0,
+            wiggleSpeed: 0.15 + Math.random() * 0.1
+        });
+    }
 }
 
-// Game loop logic
 function gameLoop() {
     if (!gameActive) return;
     
-    // Move obstacles left
-    for (let i = obstacles.length - 1; i >= 0; i--) {
-        const obs = obstacles[i];
-        obs.x -= obs.speed;
-        obs.element.style.left = `${obs.x}%`;
+    updateGameLogic();
+    renderGame();
+    
+    gameAnimationFrameId = requestAnimationFrame(gameLoop);
+}
+
+function updateGameLogic() {
+    // 1. Interpolate Player Position toward Pointer
+    const dx = pointerX - player.x;
+    const dy = pointerY - player.y;
+    player.x += dx * 0.12;
+    player.y += dy * 0.12;
+    
+    // Boundary checks
+    player.x = Math.max(70, Math.min(GAME_WIDTH - 70, player.x));
+    player.y = Math.max(50, Math.min(GAME_HEIGHT - 50, player.y));
+    
+    // Swim angle calculation
+    const targetAngle = Math.atan2(dy, dx + 60) * 0.5;
+    player.angle += (targetAngle - player.angle) * 0.15;
+    
+    // Invulnerability cooldown
+    if (isInvulnerable) {
+        invulnerableTime -= 16.7; // Approx ms per frame
+        if (invulnerableTime <= 0) {
+            isInvulnerable = false;
+        }
+    }
+    
+    // 2. Scroll River Background
+    bgScrollX -= 1.5;
+    if (bgScrollX <= -GAME_WIDTH) {
+        bgScrollX = 0;
+    }
+    
+    // 3. Update Entities
+    const now = Date.now();
+    if (now - lastSpawnTime > 1000) {
+        spawnEntity();
+        lastSpawnTime = now;
+    }
+    
+    for (let i = entities.length - 1; i >= 0; i--) {
+        const ent = entities[i];
+        ent.x += ent.vx;
+        ent.y += ent.vy;
         
-        // Remove offscreen obstacles
-        if (obs.x < -10) {
-            obs.element.remove();
-            obstacles.splice(i, 1);
+        // Boundaries
+        if (ent.y < 30 || ent.y > GAME_HEIGHT - 30) {
+            ent.vy *= -1;
+        }
+        
+        // Specific animations
+        if (ent.type === 'trash') {
+            ent.angle += ent.rotSpeed;
+        } else if (ent.type === 'friend') {
+            ent.wiggle += ent.wiggleSpeed;
+        }
+        
+        // Remove offscreen
+        if (ent.x < -100) {
+            entities.splice(i, 1);
             continue;
         }
         
-        // Bounding-box Collision Check
-        if (!isInvulnerable) {
-            const playerRect = player.getBoundingClientRect();
-            const obsRect = obs.element.getBoundingClientRect();
-            
-            if (checkCollision(playerRect, obsRect)) {
-                handlePlayerHit();
-                
-                obs.element.remove();
-                obstacles.splice(i, 1);
-            }
+        // Collision detection with player
+        const dist = Math.hypot(player.x - ent.x, player.y - ent.y);
+        const collisionRadius = (player.width * 0.45) + (ent.width * 0.45);
+        
+        if (dist < collisionRadius * 0.85) { // Forgiving bounds
+            handleCollision(ent, i);
         }
     }
     
-    if (gameActive) {
-        gameAnimationFrameId = requestAnimationFrame(gameLoop);
+    // 4. Update Particles
+    for (let i = particles.length - 1; i >= 0; i--) {
+        const p = particles[i];
+        p.x += p.vx;
+        p.y += p.vy;
+        p.alpha -= p.decay;
+        if (p.alpha <= 0) {
+            particles.splice(i, 1);
+        }
+    }
+    
+    // 5. Update Floating Texts
+    for (let i = floatingTexts.length - 1; i >= 0; i--) {
+        const ft = floatingTexts[i];
+        ft.y += ft.vy;
+        ft.alpha -= ft.decay;
+        if (ft.alpha <= 0) {
+            floatingTexts.splice(i, 1);
+        }
+    }
+    
+    // 6. Ambient Bubbles
+    for (let i = 0; i < ambientBubbles.length; i++) {
+        const b = ambientBubbles[i];
+        b.x -= b.speed;
+        if (b.x < -20) {
+            b.x = GAME_WIDTH + 20;
+            b.y = Math.random() * GAME_HEIGHT;
+        }
     }
 }
 
-// Collision detection with a 20% inner padding for forgiving gameplay
-function checkCollision(rect1, rect2) {
-    const marginX = rect1.width * 0.2;
-    const marginY = rect1.height * 0.2;
-    
-    return !(
-        rect1.right - marginX < rect2.left + marginX ||
-        rect1.left + marginX > rect2.right - marginX ||
-        rect1.bottom - marginY < rect2.top + marginY ||
-        rect1.top + marginY > rect2.bottom - marginY
-    );
-}
-
-function handlePlayerHit() {
-    playBonkSound();
-    hearts--;
-    updateHeartsUI();
-    
-    if (hearts <= 0) {
-        triggerGameOver();
-        return;
+function handleCollision(ent, index) {
+    if (ent.type === 'trash') {
+        playPopSound();
+        spawnParticles(ent.x, ent.y, '#ffd54f', 12);
+        
+        cleanliness = Math.min(100, cleanliness + 10);
+        updateProgressBarUI();
+        
+        spawnFloatingText(ent.x, ent.y - 20, "+10% Clean! 🧹", "#4caf50");
+        entities.splice(index, 1);
+        
+        if (cleanliness >= 100) {
+            triggerVictory();
+        }
+    } else if (ent.type === 'friend' && !isInvulnerable) {
+        playBonkSound();
+        spawnParticles(ent.x, ent.y, '#e57373', 15);
+        
+        hearts--;
+        updateHeartsUI();
+        
+        spawnFloatingText(player.x, player.y - 40, "Oops! Watch out! 🐟", "#e57373");
+        
+        isInvulnerable = true;
+        invulnerableTime = 1200; // 1.2 seconds invulnerability
+        
+        entities.splice(index, 1);
+        
+        if (hearts <= 0) {
+            triggerGameOver();
+        }
     }
-    
-    // Flash invulnerability
-    isInvulnerable = true;
-    player.classList.add('hit');
-    
-    setTimeout(() => {
-        player.classList.remove('hit');
-        isInvulnerable = false;
-    }, 1200);
 }
 
 function triggerGameOver() {
@@ -440,43 +606,213 @@ function triggerGameOver() {
 function triggerVictory() {
     playChimeSound();
     stopGameEngine();
-    
-    estuaryOverlay.style.opacity = 0.9;
     launchConfetti();
-    
-    setTimeout(() => {
-        gameWinOverlay.classList.remove('hidden');
-    }, 1000);
+    gameWinOverlay.classList.remove('hidden');
 }
 
 function launchConfetti() {
-    const colors = ['#ff4444', '#ff007f', '#a832a8', '#3f51b5', '#00e5ff', '#00e676', '#ffea00', '#ff9100'];
-    const container = document.getElementById('scene-game');
-    
-    for (let i = 0; i < 60; i++) {
-        const particle = document.createElement('div');
-        particle.className = 'confetti-particle';
-        
-        particle.style.left = `${Math.random() * 100}%`;
-        particle.style.top = `-15px`;
-        particle.style.backgroundColor = colors[Math.floor(Math.random() * colors.length)];
-        
-        const size = 6 + Math.random() * 10;
-        particle.style.width = `${size}px`;
-        particle.style.height = `${size}px`;
-        
-        const duration = 2.4 + Math.random() * 1.8;
-        const delay = Math.random() * 0.4;
-        particle.style.animationDuration = `${duration}s`;
-        particle.style.animationDelay = `${delay}s`;
-        
-        if (Math.random() > 0.5) {
-            particle.style.borderRadius = "0";
-        }
-        
-        container.appendChild(particle);
-        setTimeout(() => particle.remove(), (duration + delay) * 1000);
+    const colors = ['#ffd54f', '#81c784', '#64b5f6', '#ff8a80', '#ba68c8', '#a1887f'];
+    for (let i = 0; i < 80; i++) {
+        particles.push({
+            x: Math.random() * GAME_WIDTH,
+            y: -20,
+            vx: (Math.random() - 0.5) * 3,
+            vy: Math.random() * 4 + 2,
+            radius: Math.random() * 8 + 3,
+            color: colors[Math.floor(Math.random() * colors.length)],
+            alpha: 1,
+            decay: Math.random() * 0.01 + 0.005
+        });
     }
+}
+
+// Renders everything onto the canvas
+function renderGame() {
+    ctx.clearRect(0, 0, GAME_WIDTH, GAME_HEIGHT);
+    
+    // Scale everything relative to virtual GAME coordinates
+    const dpr = window.devicePixelRatio || 1;
+    const finalScaleX = canvasWidth / GAME_WIDTH;
+    const finalScaleY = canvasHeight / GAME_HEIGHT;
+    
+    ctx.save();
+    ctx.scale(finalScaleX * dpr, finalScaleY * dpr);
+    
+    // 1. Draw River Background
+    if (images.riverBg.complete) {
+        ctx.drawImage(images.riverBg, bgScrollX, 0, GAME_WIDTH, GAME_HEIGHT);
+        ctx.drawImage(images.riverBg, bgScrollX + GAME_WIDTH, 0, GAME_WIDTH, GAME_HEIGHT);
+    } else {
+        // Fallback simple background gradient
+        ctx.fillStyle = '#0288d1';
+        ctx.fillRect(0, 0, GAME_WIDTH, GAME_HEIGHT);
+    }
+    
+    // 2. Draw Ambient Murky overlay (greenish-brown fades to clear blue based on cleanliness)
+    const dirtyOpacity = 0.55 - (cleanliness / 100) * 0.55;
+    ctx.fillStyle = `rgba(109, 110, 44, ${dirtyOpacity})`;
+    ctx.fillRect(0, 0, GAME_WIDTH, GAME_HEIGHT);
+    
+    const cleanOpacity = (cleanliness / 100) * 0.25;
+    ctx.fillStyle = `rgba(0, 229, 255, ${cleanOpacity})`;
+    ctx.fillRect(0, 0, GAME_WIDTH, GAME_HEIGHT);
+    
+    // 3. Draw Ambient Bubbles
+    ctx.fillStyle = 'rgba(255, 255, 255, 0.2)';
+    for (let i = 0; i < ambientBubbles.length; i++) {
+        const b = ambientBubbles[i];
+        ctx.beginPath();
+        ctx.arc(b.x, b.y, b.radius, 0, Math.PI * 2);
+        ctx.fillStyle = `rgba(255, 255, 255, ${b.opacity})`;
+        ctx.fill();
+        // highlight dot
+        ctx.beginPath();
+        ctx.arc(b.x - b.radius * 0.3, b.y - b.radius * 0.3, b.radius * 0.2, 0, Math.PI * 2);
+        ctx.fillStyle = `rgba(255, 255, 255, ${b.opacity * 1.5})`;
+        ctx.fill();
+    }
+    
+    // 4. Draw entities (trash images and procedural animals)
+    for (let i = 0; i < entities.length; i++) {
+        const ent = entities[i];
+        ctx.save();
+        ctx.translate(ent.x, ent.y);
+        
+        if (ent.type === 'trash') {
+            ctx.rotate(ent.angle);
+            let img = null;
+            if (ent.subType === 'bottle') img = images.bottle;
+            if (ent.subType === 'can') img = images.can;
+            if (ent.subType === 'bag') img = images.bag;
+            
+            if (img && img.complete) {
+                ctx.drawImage(img, -ent.width/2, -ent.height/2, ent.width, ent.height);
+            } else {
+                // simple colored circles for missing images
+                ctx.fillStyle = '#ff7043';
+                ctx.beginPath();
+                ctx.arc(0, 0, ent.width/2, 0, Math.PI * 2);
+                ctx.fill();
+            }
+        } else if (ent.type === 'friend') {
+            // Draw cute friendly animals procedurally
+            if (ent.subType === 'fish') {
+                // Fish body
+                ctx.fillStyle = '#ff7043';
+                ctx.beginPath();
+                ctx.ellipse(0, 0, 22, 12, 0, 0, Math.PI * 2);
+                ctx.fill();
+                
+                // Tail (animated wiggle)
+                const tailWiggle = Math.sin(ent.wiggle) * 12;
+                ctx.beginPath();
+                ctx.moveTo(-20, 0);
+                ctx.lineTo(-35, -10 + tailWiggle);
+                ctx.lineTo(-30, 0);
+                ctx.lineTo(-35, 10 + tailWiggle);
+                ctx.closePath();
+                ctx.fill();
+                
+                // Eye
+                ctx.fillStyle = '#ffffff';
+                ctx.beginPath();
+                ctx.arc(10, -3, 4, 0, Math.PI * 2);
+                ctx.fill();
+                ctx.fillStyle = '#000000';
+                ctx.beginPath();
+                ctx.arc(11, -3, 2, 0, Math.PI * 2);
+                ctx.fill();
+            } else if (ent.subType === 'turtle') {
+                // Flippers
+                ctx.fillStyle = '#81c784';
+                ctx.beginPath();
+                ctx.ellipse(10, -15, 14, 6, -Math.PI / 4, 0, Math.PI * 2); // Front top
+                ctx.ellipse(10, 15, 14, 6, Math.PI / 4, 0, Math.PI * 2);  // Front bottom
+                ctx.ellipse(-15, -10, 10, 5, -Math.PI / 6, 0, Math.PI * 2); // Back top
+                ctx.ellipse(-15, 10, 10, 5, Math.PI / 6, 0, Math.PI * 2);  // Back bottom
+                ctx.fill();
+                
+                // Head
+                ctx.beginPath();
+                ctx.arc(28, 0, 8, 0, Math.PI * 2);
+                ctx.fill();
+                ctx.fillStyle = '#000000';
+                ctx.beginPath();
+                ctx.arc(31, -2, 1.5, 0, Math.PI * 2);
+                ctx.arc(31, 2, 1.5, 0, Math.PI * 2);
+                ctx.fill();
+
+                // Shell
+                ctx.fillStyle = '#33691e';
+                ctx.beginPath();
+                ctx.ellipse(0, 0, 24, 18, 0, 0, Math.PI * 2);
+                ctx.fill();
+                ctx.strokeStyle = '#558b2f';
+                ctx.lineWidth = 3;
+                ctx.stroke();
+            }
+        }
+        ctx.restore();
+    }
+    
+    // 5. Draw Player (Crocodile)
+    ctx.save();
+    ctx.translate(player.x, player.y);
+    ctx.rotate(player.angle);
+    
+    // Flashing effect if invulnerable
+    let drawPlayer = true;
+    if (isInvulnerable && Math.floor(Date.now() / 100) % 2 === 0) {
+        drawPlayer = false;
+    }
+    
+    if (drawPlayer) {
+        if (images.player.complete) {
+            ctx.drawImage(images.player, -player.width/2, -player.height/2, player.width, player.height);
+        } else {
+            // Draw a cute fallback canvas crocodile body
+            ctx.fillStyle = '#2e7d32';
+            ctx.beginPath();
+            ctx.ellipse(0, 0, player.width/2, player.height/2, 0, 0, Math.PI * 2);
+            ctx.fill();
+        }
+    }
+    ctx.restore();
+    
+    // 6. Draw Particle System
+    for (let i = 0; i < particles.length; i++) {
+        const p = particles[i];
+        ctx.fillStyle = p.color;
+        ctx.globalAlpha = p.alpha;
+        ctx.beginPath();
+        ctx.arc(p.x, p.y, p.radius, 0, Math.PI * 2);
+        ctx.fill();
+    }
+    ctx.globalAlpha = 1.0; // Reset
+    
+    // 7. Draw Floating Texts
+    ctx.font = "bold 22px 'Fredoka', cursive";
+    ctx.textAlign = 'center';
+    for (let i = 0; i < floatingTexts.length; i++) {
+        const ft = floatingTexts[i];
+        ctx.fillStyle = ft.color;
+        ctx.globalAlpha = ft.alpha;
+        ctx.fillText(ft.text, ft.x, ft.y);
+    }
+    ctx.globalAlpha = 1.0;
+    
+    // 8. Custom premium cursor bubble drawn at pointer coordinates
+    ctx.strokeStyle = 'rgba(255, 255, 255, 0.7)';
+    ctx.lineWidth = 3;
+    ctx.beginPath();
+    ctx.arc(pointerX, pointerY, 18, 0, Math.PI * 2);
+    ctx.stroke();
+    ctx.fillStyle = 'rgba(255, 255, 255, 0.25)';
+    ctx.beginPath();
+    ctx.arc(pointerX - 4, pointerY - 4, 4, 0, Math.PI * 2);
+    ctx.fill();
+    
+    ctx.restore();
 }
 
 // --- GLOBAL NAVIGATION BINDINGS ---
@@ -522,7 +858,7 @@ window.addEventListener('DOMContentLoaded', () => {
         }
     });
     
-    // Replay buttons
+    // Replay/Restart buttons
     document.getElementById('btn-restart').addEventListener('click', () => {
         playChimeSound();
         startGameEngine();

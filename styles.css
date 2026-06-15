@@ -383,137 +383,106 @@ body {
     z-index: 3;
 }
 
-/* Scene 3: Runner Mini-game Canvas Layout */
+/* Scene 3: Clean River Rescue Canvas Layout */
+.game-layout {
+    flex-direction: column;
+}
+
 .game-header {
     display: flex;
-    justify-content: center; /* Center horizontally above the game board */
+    justify-content: space-between;
     align-items: center;
-    gap: 32px; /* Add breathing space between hearts and timer */
+    gap: 16px;
     width: 100%;
-    margin-bottom: 12px; /* Center-placed directly above */
+    margin-bottom: 12px;
     z-index: 10;
 }
 
 .health-board, .timer-board {
-    padding: 10px 28px;
+    padding: 10px 24px;
     border-radius: 18px;
     display: flex;
     align-items: center;
     justify-content: center;
     box-shadow: 0 4px 10px rgba(0,0,0,0.06);
+    background: rgba(255, 255, 255, 0.88);
+    backdrop-filter: blur(8px);
 }
 
 .health-board {
-    border-color: var(--accent-coral);
-    font-size: 1.5rem;
+    border: 4px solid var(--accent-coral);
+    font-size: 1.4rem;
 }
 
 .timer-board {
-    border-color: var(--accent);
+    border: 4px solid var(--accent);
 }
 
 .timer-board span {
-    font-size: 1.3rem;
+    font-size: 1.25rem;
     font-weight: 700;
     color: #e65100;
 }
 
-/* River Runner Container */
-.game-river-container.runner-mode {
+.clean-progress-board {
+    display: flex;
+    align-items: center;
+    gap: 12px;
+    padding: 10px 24px;
+    border-radius: 18px;
+    border: 4px solid var(--primary-light);
+    flex: 1;
+    max-width: 450px;
+    background: rgba(255, 255, 255, 0.88);
+    backdrop-filter: blur(8px);
+}
+
+.progress-title {
+    font-size: 1.15rem;
+    font-weight: 700;
+    color: var(--primary-dark);
+    white-space: nowrap;
+}
+
+.progress-bar-outer {
+    flex: 1;
+    height: 18px;
+    background: #e0e0e0;
+    border-radius: 9px;
+    overflow: hidden;
+    border: 2px solid white;
+    box-shadow: inset 0 2px 4px rgba(0,0,0,0.1);
+}
+
+#progress-bar-inner {
+    height: 100%;
+    width: 0%;
+    background: linear-gradient(90deg, #4caf50, #81c784);
+    border-radius: 8px;
+    transition: width 0.3s cubic-bezier(0.175, 0.885, 0.32, 1.275);
+    box-shadow: 0 0 8px rgba(76, 175, 80, 0.5);
+}
+
+/* River Canvas Container */
+.game-river-container {
     flex: 1;
     border-radius: 28px;
     border: 6px solid white;
     position: relative;
     overflow: hidden;
     box-shadow: var(--shadow-premium);
-    cursor: pointer;
-    background: #4fc3f7; /* Clear cartoon water fallback */
+    background: #0288d1; /* Fallback deep blue */
+    display: flex;
+    justify-content: center;
+    align-items: center;
 }
 
-.scrolling-water {
-    position: absolute;
-    top: 0;
-    left: 0;
-    width: 200%;
-    height: 100%;
-    background: url('assets/game_river_bg.png') repeat-x;
-    background-size: auto 100%;
-    animation: scroll-river-bg 12s linear infinite;
-    z-index: 1;
-}
-
-@keyframes scroll-river-bg {
-    0% { transform: translateX(0); }
-    100% { transform: translateX(-50%); }
-}
-
-.murky-overlay-runner {
-    position: absolute;
-    top: 0;
-    left: 0;
+#game-canvas {
     width: 100%;
     height: 100%;
-    background-color: rgba(62, 100, 75, 0.3); /* Subtle murky green wash */
-    mix-blend-mode: color;
-    z-index: 2;
-    pointer-events: none;
-}
-
-/* Dynamic Estuary/Clean overlay (fades in slowly towards the end) */
-.estuary-overlay {
-    position: absolute;
-    top: 0;
-    left: 0;
-    width: 100%;
-    height: 100%;
-    background: linear-gradient(135deg, rgba(224,242,241,0.3) 0%, rgba(128,222,234,0.3) 100%);
-    z-index: 4;
-    opacity: 0;
-    pointer-events: none;
-    transition: opacity 3s ease;
-}
-
-/* Crocodile Player Sprite */
-.player-sprite {
-    position: absolute;
-    width: 180px; /* ENHANCED: Bigger size */
-    height: auto;
-    left: 8%;
-    top: 50%;
-    transform: translateY(-50%);
-    z-index: 5;
-    /* transition: top removed to prevent lag and enable instant follow */
-    filter: drop-shadow(0 6px 12px rgba(0,0,0,0.25));
-    user-select: none;
-    pointer-events: none;
-}
-
-/* Collision Flash animation */
-@keyframes hit-flash {
-    0%, 100% { opacity: 1; filter: drop-shadow(0 0 16px #ff1744) brightness(1.2); }
-    50% { opacity: 0.3; filter: none; }
-}
-
-.player-sprite.hit {
-    animation: hit-flash 0.15s ease infinite alternate;
-}
-
-/* Obstacle Sprites spawned by game engine */
-.obstacle-sprite {
-    position: absolute;
-    width: 80px; /* ENHANCED: Bigger size */
-    height: auto;
-    z-index: 6;
-    filter: drop-shadow(0 6px 10px rgba(0,0,0,0.3));
-    user-select: none;
-    pointer-events: none;
-    animation: spin-trash 6s linear infinite;
-    transform-origin: center center;
-}
-
-@keyframes spin-trash {
-    from { transform: rotate(0deg); }
-    to { transform: rotate(360deg); }
+    display: block;
+    background: transparent;
+    cursor: none; /* Hide default cursor to make custom controls feel premium */
 }
 
 /* Game Over / Win overlays */
