@@ -247,6 +247,7 @@ let gameAnimationFrameId = null;
 // Preloaded images
 const images = {
     player: new Image(),
+    playerOpen: new Image(),
     bottle: new Image(),
     can: new Image(),
     bag: new Image(),
@@ -255,6 +256,7 @@ const images = {
     riverBg: new Image()
 };
 images.player.src = 'assets/game_crocodile.png';
+images.playerOpen.src = 'assets/game_crocodile_open.png';
 images.bottle.src = 'assets/game_bottle.png';
 images.can.src = 'assets/game_can.png';
 images.bag.src = 'assets/game_bag.png';
@@ -489,6 +491,26 @@ function updateGameLogic() {
     const dist = Math.sqrt(dx * dx + dy * dy);
     player.swimTime = (player.swimTime || 0) + 0.08 + Math.min(dist * 0.008, 0.18);
     
+    // Update mouth opening logic based on food proximity or timer
+    if (player.mouthOpenTimer > 0) {
+        player.mouthOpenTimer--;
+    }
+    
+    let foodClose = false;
+    for (let i = 0; i < entities.length; i++) {
+        const ent = entities[i];
+        if (ent.type === 'friend') {
+            const fdx = ent.x - (player.x + player.width * 0.25);
+            const fdy = ent.y - player.y;
+            const distToMouth = Math.hypot(fdx, fdy);
+            if (distToMouth < 160) {
+                foodClose = true;
+                break;
+            }
+        }
+    }
+    player.isMouthOpen = foodClose || (player.mouthOpenTimer > 0);
+    
     // Boundary checks
     player.x = Math.max(70, Math.min(GAME_WIDTH - 70, player.x));
     player.y = Math.max(50, Math.min(GAME_HEIGHT - 50, player.y));
@@ -603,6 +625,9 @@ function handleCollision(ent, index) {
     } else if (ent.type === 'friend') {
         playPopSound();
         spawnParticles(ent.x, ent.y, '#ffd54f', 12);
+        
+        // Open mouth on eat
+        player.mouthOpenTimer = 18; 
         
         cleanliness = Math.min(100, cleanliness + 8); // Eat food to gain 8% energy
         score += 150; // Add 150 score points
@@ -803,9 +828,10 @@ function renderGame() {
     }
     
     if (drawPlayer) {
-        if (images.player.complete) {
+        const activePlayerImg = (player.isMouthOpen && images.playerOpen.complete) ? images.playerOpen : images.player;
+        if (activePlayerImg.complete) {
             const numSlices = 24;
-            const sliceWidth = images.player.width / numSlices;
+            const sliceWidth = activePlayerImg.width / numSlices;
             const destSliceWidth = player.width / numSlices;
             
             for (let i = 0; i < numSlices; i++) {
@@ -817,14 +843,14 @@ function renderGame() {
                 const sx = i * sliceWidth;
                 const sy = 0;
                 const sw = sliceWidth;
-                const sh = images.player.height;
+                const sh = activePlayerImg.height;
                 
                 const dx = -player.width / 2 + i * destSliceWidth;
                 const dy = -player.height / 2 + wiggleY;
                 const dw = destSliceWidth + 0.5; // slight overlap to prevent gaps
                 const dh = player.height;
                 
-                ctx.drawImage(images.player, sx, sy, sw, sh, dx, dy, dw, dh);
+                ctx.drawImage(activePlayerImg, sx, sy, sw, sh, dx, dy, dw, dh);
             }
         } else {
             // Draw a cute fallback canvas crocodile body
