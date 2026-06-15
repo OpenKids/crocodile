@@ -291,7 +291,8 @@ gameCanvas.addEventListener('touchmove', (e) => {
     if (e.touches.length > 0) {
         updatePointerFromClient(e.touches[0].clientX, e.touches[0].clientY);
     }
-});
+    e.preventDefault();
+}, { passive: false });
 gameCanvas.addEventListener('mousedown', (e) => {
     initAudio();
     updatePointerFromClient(e.clientX, e.clientY);
@@ -301,7 +302,8 @@ gameCanvas.addEventListener('touchstart', (e) => {
     if (e.touches.length > 0) {
         updatePointerFromClient(e.touches[0].clientX, e.touches[0].clientY);
     }
-});
+    e.preventDefault();
+}, { passive: false });
 
 // Particles helper
 function spawnParticles(x, y, color, count = 10) {

@@ -635,3 +635,315 @@ body {
     border: 3px dashed var(--primary-light);
     animation: pop-in 0.5s ease;
 }
+
+/* ==========================================================================
+   MOBILE & RESPONSIVE STYLES
+   ========================================================================== */
+@media (max-width: 768px), (max-height: 700px) {
+    /* Full viewport reset for mobile */
+    body {
+        padding: 0;
+        background: #a8e6cf;
+    }
+
+    #app-container {
+        max-width: 100%;
+        max-height: 100%;
+        width: 100vw;
+        height: 100dvh;
+        border: none;
+        border-radius: 0;
+        box-shadow: none;
+    }
+
+    #global-header {
+        height: 55px;
+        padding: 0 16px;
+    }
+
+    .app-title {
+        font-size: 1.25rem;
+    }
+
+    .icon-btn {
+        width: 38px;
+        height: 38px;
+    }
+
+    .icon {
+        width: 18px;
+        height: 18px;
+    }
+
+    /* Reduce default slide padding */
+    .slide {
+        padding: 16px 20px;
+    }
+
+    /* Start Scene adjustments */
+    .start-layout {
+        gap: 16px;
+    }
+
+    .start-crocodile-container {
+        width: 130px;
+        height: 130px;
+    }
+
+    .start-bubble {
+        padding: 16px;
+    }
+
+    .start-bubble h2 {
+        font-size: 1.6rem;
+        margin-bottom: 8px;
+    }
+
+    .story-text {
+        font-size: 1.1rem;
+    }
+
+    .primary-btn, .pulse-btn {
+        font-size: 1.1rem;
+        padding: 12px 28px;
+        border-radius: 16px;
+    }
+
+    /* Ancient Scene split to vertical */
+    .split-layout {
+        flex-direction: column;
+        gap: 16px;
+    }
+
+    .visual-pane {
+        flex: 1.2;
+        min-height: 200px;
+    }
+
+    .content-pane {
+        flex: 0.8;
+        justify-content: flex-start;
+    }
+
+    .card-stack {
+        height: 100%;
+        width: 100%;
+    }
+
+    .image-frame {
+        width: 60%;
+        height: 85%;
+    }
+
+    .ancient-landscape {
+        transform: rotate(-4deg) translate(-15px, 0px);
+    }
+
+    .ancient-fossil {
+        transform: rotate(4deg) translate(15px, 0px);
+    }
+
+    .slide-title-large {
+        font-size: 1.6rem;
+    }
+
+    /* Game Scene */
+    .game-header {
+        flex-wrap: wrap;
+        gap: 8px;
+        margin-bottom: 8px;
+    }
+
+    .health-board, .timer-board {
+        padding: 6px 14px;
+        font-size: 1.1rem;
+        border-width: 3px;
+        border-radius: 12px;
+    }
+
+    .health-board {
+        font-size: 1.1rem;
+        order: 1;
+    }
+
+    .timer-board {
+        order: 3;
+    }
+
+    .timer-board span {
+        font-size: 1.1rem;
+    }
+
+    .clean-progress-board {
+        padding: 6px 14px;
+        border-radius: 12px;
+        border-width: 3px;
+        max-width: 100%;
+        width: 100%;
+        order: 2;
+        flex: none;
+    }
+
+    .progress-title {
+        font-size: 0.95rem;
+    }
+
+    .progress-bar-outer {
+        height: 14px;
+    }
+
+    /* Preserving aspect ratio on mobile for game river container to prevent stretching */
+    .game-river-container {
+        flex: unset;
+        width: 100%;
+        aspect-ratio: 16 / 9;
+        max-height: 55vh;
+        border-width: 4px;
+        border-radius: 18px;
+        margin: auto 0;
+    }
+
+    /* Global Footer Navigation */
+    #global-nav {
+        height: 65px;
+        padding: 0 20px;
+    }
+
+    .wood-btn {
+        font-size: 1.05rem;
+        padding: 8px 18px;
+        border-radius: 12px;
+        box-shadow: 0 4px 0 #5d4037, 0 6px 12px rgba(0,0,0,0.1);
+    }
+
+    .wood-btn:active:not(:disabled) {
+        transform: translateY(3px);
+        box-shadow: 0 1px 0 #5d4037, 0 2px 4px rgba(0,0,0,0.1);
+    }
+
+    #progress-indicator .dot {
+        width: 12px;
+        height: 12px;
+    }
+}
+
+@media (max-height: 500px) and (orientation: landscape) {
+    #global-header {
+        height: 44px;
+        padding: 0 16px;
+    }
+    .app-title {
+        font-size: 1.1rem;
+    }
+    .icon-btn {
+        width: 32px;
+        height: 32px;
+    }
+    .icon {
+        width: 16px;
+        height: 16px;
+    }
+    #global-nav {
+        height: 48px;
+        padding: 0 16px;
+    }
+    .wood-btn {
+        font-size: 0.95rem;
+        padding: 4px 14px;
+        border-radius: 8px;
+        box-shadow: 0 3px 0 #5d4037, 0 4px 8px rgba(0,0,0,0.1);
+    }
+    .wood-btn:active:not(:disabled) {
+        transform: translateY(2px);
+        box-shadow: 0 1px 0 #5d4037, 0 1px 2px rgba(0,0,0,0.1);
+    }
+    .slide {
+        padding: 8px 16px;
+    }
+    .start-layout {
+        gap: 8px;
+    }
+    .start-crocodile-container {
+        width: 80px;
+        height: 80px;
+    }
+    .start-bubble {
+        padding: 10px;
+        border-radius: 16px;
+    }
+    .start-bubble h2 {
+        font-size: 1.3rem;
+        margin-bottom: 4px;
+    }
+    .story-text {
+        font-size: 0.95rem;
+    }
+    .primary-btn, .pulse-btn {
+        font-size: 1rem;
+        padding: 8px 20px;
+        border-radius: 12px;
+    }
+    .split-layout {
+        flex-direction: row;
+        gap: 16px;
+    }
+    .visual-pane {
+        flex: 0.8;
+    }
+    .content-pane {
+        flex: 1.2;
+        justify-content: center;
+    }
+    .image-frame {
+        width: 80%;
+        height: 85%;
+    }
+    .game-header {
+        flex-wrap: nowrap;
+        justify-content: space-between;
+        margin-bottom: 4px;
+    }
+    .health-board, .timer-board {
+        padding: 4px 10px;
+        font-size: 0.95rem;
+    }
+    .timer-board span {
+        font-size: 0.95rem;
+    }
+    .clean-progress-board {
+        padding: 4px 10px;
+        max-width: 250px;
+        flex: 1;
+        width: auto;
+    }
+    .progress-title {
+        font-size: 0.85rem;
+    }
+    .progress-bar-outer {
+        height: 10px;
+    }
+    .game-river-container {
+        max-height: 50vh;
+    }
+}
+
+@media (max-height: 500px) {
+    .win-card {
+        padding: 12px;
+        gap: 8px;
+    }
+    .win-emoji {
+        font-size: 2.2rem;
+    }
+    .win-card h2 {
+        font-size: 1.25rem;
+    }
+    .win-card .story-text {
+        font-size: 0.9rem;
+    }
+    .win-card .score-display {
+        font-size: 1.1rem;
+        margin: 6px 0;
+        padding: 6px 16px;
+    }
+}
