@@ -226,9 +226,10 @@ let timeLeft = 30; // Shorter game time limit (30s)
 let cleanliness = 0; // Starts dirty (0%), ends clean (100%)
 let isInvulnerable = false;
 let invulnerableTime = 0;
+let score = 0;
 
 // Entities & Particle systems
-let player = { x: 150, y: 275, angle: 0, width: 180, height: 75 }; // Larger player figure
+let player = { x: 150, y: 275, angle: 0, width: 220, height: 92 }; // Much larger player figure
 let entities = [];
 let particles = [];
 let floatingTexts = [];
@@ -341,6 +342,7 @@ function startGameEngine() {
     hearts = 3;
     timeLeft = 30;
     cleanliness = 0;
+    score = 0;
     isInvulnerable = false;
     invulnerableTime = 0;
     
@@ -404,11 +406,7 @@ function updateGameTimer() {
     gameTimerLabel.innerText = timeLeft;
     
     if (timeLeft <= 0) {
-        if (cleanliness >= 100) {
-            triggerVictory();
-        } else {
-            triggerGameOver();
-        }
+        triggerVictory();
     }
 }
 
@@ -416,7 +414,7 @@ function updateGameTimer() {
 function spawnEntity() {
     const isTrash = Math.random() < 0.45; // 45% trash, 55% food
     const y = 50 + Math.random() * (GAME_HEIGHT - 100);
-    const vx = -(Math.random() * 2.5 + 3.0); // swim a bit faster
+    const vx = -(Math.random() * 4.0 + 4.5); // Much faster movement
     
     if (isTrash) {
         const trashTypes = ['bottle', 'can', 'bag'];
@@ -428,10 +426,10 @@ function spawnEntity() {
             y: y,
             vx: vx,
             vy: (Math.random() - 0.5) * 0.5,
-            width: 75, // Larger trash (75px)
+            width: 75,
             height: 75,
             angle: Math.random() * Math.PI,
-            rotSpeed: (Math.random() - 0.5) * 0.05
+            rotSpeed: (Math.random() - 0.5) * 0.08 // faster spin
         });
     } else {
         const friendTypes = ['fish', 'turtle'];
@@ -441,12 +439,12 @@ function spawnEntity() {
             subType: type,
             x: GAME_WIDTH + 50,
             y: y,
-            vx: vx * 1.1,
-            vy: Math.sin(y) * 0.5,
-            width: type === 'fish' ? 75 : 85,  // Larger food items
+            vx: vx * 1.15, // Food moves even faster
+            vy: Math.sin(y) * 0.8, // subtle wavy swimming
+            width: type === 'fish' ? 75 : 85,
             height: type === 'fish' ? 50 : 65,
             wiggle: 0,
-            wiggleSpeed: 0.15 + Math.random() * 0.1
+            wiggleSpeed: 0.25 + Math.random() * 0.15
         });
     }
 }
@@ -484,14 +482,14 @@ function updateGameLogic() {
     }
     
     // 2. Scroll River Background
-    bgScrollX -= 1.5;
+    bgScrollX -= 2.0; // background scrolls slightly faster to match item speeds
     if (bgScrollX <= -GAME_WIDTH) {
         bgScrollX = 0;
     }
     
     // 3. Update Entities
     const now = Date.now();
-    if (now - lastSpawnTime > 600) { // Spawns every 600ms instead of 1000ms
+    if (now - lastSpawnTime > 350) { // Spawns every 350ms for high density challenge
         spawnEntity();
         lastSpawnTime = now;
     }
@@ -582,22 +580,20 @@ function handleCollision(ent, index) {
         playPopSound();
         spawnParticles(ent.x, ent.y, '#ffd54f', 12);
         
-        cleanliness = Math.min(100, cleanliness + 15); // Eat food to gain 15% energy
+        cleanliness = Math.min(100, cleanliness + 8); // Eat food to gain 8% energy
+        score += 150; // Add 150 score points
         updateProgressBarUI();
         
         const foodLabel = ent.subType === 'fish' ? "Yum! Fish! 🐟" : "Yum! Turtle! 🐢";
         spawnFloatingText(ent.x, ent.y - 20, foodLabel, "#4caf50");
         entities.splice(index, 1);
-        
-        if (cleanliness >= 100) {
-            triggerVictory();
-        }
     }
 }
 
 function triggerGameOver() {
     playSadSound();
     stopGameEngine();
+    document.getElementById('game-over-score').innerText = `${cleanliness}%`;
     gameOverOverlay.classList.remove('hidden');
 }
 
@@ -605,6 +601,11 @@ function triggerVictory() {
     playChimeSound();
     stopGameEngine();
     launchConfetti();
+    
+    // Final score includes collected score + time bonus + health/heart bonus
+    const finalScore = score + (timeLeft * 50) + (hearts * 300);
+    document.getElementById('game-win-score').innerText = finalScore;
+    
     gameWinOverlay.classList.remove('hidden');
 }
 
