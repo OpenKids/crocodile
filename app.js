@@ -250,12 +250,16 @@ const images = {
     bottle: new Image(),
     can: new Image(),
     bag: new Image(),
+    fish: new Image(),
+    turtle: new Image(),
     riverBg: new Image()
 };
 images.player.src = 'assets/game_crocodile.png';
 images.bottle.src = 'assets/game_bottle.png';
 images.can.src = 'assets/game_can.png';
 images.bag.src = 'assets/game_bag.png';
+images.fish.src = 'assets/game_fish.png';
+images.turtle.src = 'assets/game_turtle.png';
 images.riverBg.src = 'assets/game_river_bg.png';
 
 let bgScrollX = 0;
@@ -421,6 +425,14 @@ function spawnEntity() {
     if (isTrash) {
         const trashTypes = ['bottle', 'can', 'bag'];
         const type = trashTypes[Math.floor(Math.random() * trashTypes.length)];
+        let w = 75, h = 75;
+        if (type === 'bottle') {
+            w = 80; h = 62; // 1.28 ratio
+        } else if (type === 'can') {
+            w = 60; h = 75; // 0.8 ratio
+        } else if (type === 'bag') {
+            w = 75; h = 75; // 1.0 ratio
+        }
         entities.push({
             type: 'trash',
             subType: type,
@@ -428,14 +440,20 @@ function spawnEntity() {
             y: y,
             vx: vx,
             vy: (Math.random() - 0.5) * 0.5,
-            width: 75,
-            height: 75,
+            width: w,
+            height: h,
             angle: Math.random() * Math.PI,
             rotSpeed: (Math.random() - 0.5) * 0.08 // faster spin
         });
     } else {
         const friendTypes = ['fish', 'turtle'];
         const type = friendTypes[Math.floor(Math.random() * friendTypes.length)];
+        let w = 75, h = 50;
+        if (type === 'fish') {
+            w = 72; h = 55; // 1.31 ratio
+        } else if (type === 'turtle') {
+            w = 88; h = 55; // 1.6 ratio
+        }
         entities.push({
             type: 'friend',
             subType: type,
@@ -443,8 +461,8 @@ function spawnEntity() {
             y: y,
             vx: vx * 1.15, // Food moves even faster
             vy: Math.sin(y) * 0.8, // subtle wavy swimming
-            width: type === 'fish' ? 75 : 85,
-            height: type === 'fish' ? 50 : 65,
+            width: w,
+            height: h,
             wiggle: 0,
             wiggleSpeed: 0.25 + Math.random() * 0.15
         });
@@ -696,61 +714,74 @@ function renderGame() {
                 ctx.fill();
             }
         } else if (ent.type === 'friend') {
-            // Draw cute friendly animals procedurally
-            if (ent.subType === 'fish') {
-                // Fish body
-                ctx.fillStyle = '#ff7043';
-                ctx.beginPath();
-                ctx.ellipse(0, 0, 22, 12, 0, 0, Math.PI * 2);
-                ctx.fill();
-                
-                // Tail (animated wiggle)
-                const tailWiggle = Math.sin(ent.wiggle) * 12;
-                ctx.beginPath();
-                ctx.moveTo(-20, 0);
-                ctx.lineTo(-35, -10 + tailWiggle);
-                ctx.lineTo(-30, 0);
-                ctx.lineTo(-35, 10 + tailWiggle);
-                ctx.closePath();
-                ctx.fill();
-                
-                // Eye
-                ctx.fillStyle = '#ffffff';
-                ctx.beginPath();
-                ctx.arc(10, -3, 4, 0, Math.PI * 2);
-                ctx.fill();
-                ctx.fillStyle = '#000000';
-                ctx.beginPath();
-                ctx.arc(11, -3, 2, 0, Math.PI * 2);
-                ctx.fill();
-            } else if (ent.subType === 'turtle') {
-                // Flippers
-                ctx.fillStyle = '#81c784';
-                ctx.beginPath();
-                ctx.ellipse(10, -15, 14, 6, -Math.PI / 4, 0, Math.PI * 2); // Front top
-                ctx.ellipse(10, 15, 14, 6, Math.PI / 4, 0, Math.PI * 2);  // Front bottom
-                ctx.ellipse(-15, -10, 10, 5, -Math.PI / 6, 0, Math.PI * 2); // Back top
-                ctx.ellipse(-15, 10, 10, 5, Math.PI / 6, 0, Math.PI * 2);  // Back bottom
-                ctx.fill();
-                
-                // Head
-                ctx.beginPath();
-                ctx.arc(28, 0, 8, 0, Math.PI * 2);
-                ctx.fill();
-                ctx.fillStyle = '#000000';
-                ctx.beginPath();
-                ctx.arc(31, -2, 1.5, 0, Math.PI * 2);
-                ctx.arc(31, 2, 1.5, 0, Math.PI * 2);
-                ctx.fill();
+            let img = null;
+            if (ent.subType === 'fish') img = images.fish;
+            if (ent.subType === 'turtle') img = images.turtle;
+            
+            if (img && img.complete) {
+                // If it is a fish, add a subtle wiggle angle
+                if (ent.subType === 'fish') {
+                    const fishWiggle = Math.sin(ent.wiggle) * 0.08;
+                    ctx.rotate(fishWiggle);
+                }
+                ctx.drawImage(img, -ent.width/2, -ent.height/2, ent.width, ent.height);
+            } else {
+                // Draw cute friendly animals procedurally as a fallback
+                if (ent.subType === 'fish') {
+                    // Fish body
+                    ctx.fillStyle = '#ff7043';
+                    ctx.beginPath();
+                    ctx.ellipse(0, 0, 22, 12, 0, 0, Math.PI * 2);
+                    ctx.fill();
+                    
+                    // Tail (animated wiggle)
+                    const tailWiggle = Math.sin(ent.wiggle) * 12;
+                    ctx.beginPath();
+                    ctx.moveTo(-20, 0);
+                    ctx.lineTo(-35, -10 + tailWiggle);
+                    ctx.lineTo(-30, 0);
+                    ctx.lineTo(-35, 10 + tailWiggle);
+                    ctx.closePath();
+                    ctx.fill();
+                    
+                    // Eye
+                    ctx.fillStyle = '#ffffff';
+                    ctx.beginPath();
+                    ctx.arc(10, -3, 4, 0, Math.PI * 2);
+                    ctx.fill();
+                    ctx.fillStyle = '#000000';
+                    ctx.beginPath();
+                    ctx.arc(11, -3, 2, 0, Math.PI * 2);
+                    ctx.fill();
+                } else if (ent.subType === 'turtle') {
+                    // Flippers
+                    ctx.fillStyle = '#81c784';
+                    ctx.beginPath();
+                    ctx.ellipse(10, -15, 14, 6, -Math.PI / 4, 0, Math.PI * 2); // Front top
+                    ctx.ellipse(10, 15, 14, 6, Math.PI / 4, 0, Math.PI * 2);  // Front bottom
+                    ctx.ellipse(-15, -10, 10, 5, -Math.PI / 6, 0, Math.PI * 2); // Back top
+                    ctx.ellipse(-15, 10, 10, 5, Math.PI / 6, 0, Math.PI * 2);  // Back bottom
+                    ctx.fill();
+                    
+                    // Head
+                    ctx.beginPath();
+                    ctx.arc(28, 0, 8, 0, Math.PI * 2);
+                    ctx.fill();
+                    ctx.fillStyle = '#000000';
+                    ctx.beginPath();
+                    ctx.arc(31, -2, 1.5, 0, Math.PI * 2);
+                    ctx.arc(31, 2, 1.5, 0, Math.PI * 2);
+                    ctx.fill();
 
-                // Shell
-                ctx.fillStyle = '#33691e';
-                ctx.beginPath();
-                ctx.ellipse(0, 0, 24, 18, 0, 0, Math.PI * 2);
-                ctx.fill();
-                ctx.strokeStyle = '#558b2f';
-                ctx.lineWidth = 3;
-                ctx.stroke();
+                    // Shell
+                    ctx.fillStyle = '#33691e';
+                    ctx.beginPath();
+                    ctx.ellipse(0, 0, 24, 18, 0, 0, Math.PI * 2);
+                    ctx.fill();
+                    ctx.strokeStyle = '#558b2f';
+                    ctx.lineWidth = 3;
+                    ctx.stroke();
+                }
             }
         }
         ctx.restore();
