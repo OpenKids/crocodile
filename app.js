@@ -485,6 +485,10 @@ function updateGameLogic() {
     player.x += dx * 0.12;
     player.y += dy * 0.12;
     
+    // Dynamic swim animation speed based on movement
+    const dist = Math.sqrt(dx * dx + dy * dy);
+    player.swimTime = (player.swimTime || 0) + 0.08 + Math.min(dist * 0.008, 0.18);
+    
     // Boundary checks
     player.x = Math.max(70, Math.min(GAME_WIDTH - 70, player.x));
     player.y = Math.max(50, Math.min(GAME_HEIGHT - 50, player.y));
@@ -800,7 +804,28 @@ function renderGame() {
     
     if (drawPlayer) {
         if (images.player.complete) {
-            ctx.drawImage(images.player, -player.width/2, -player.height/2, player.width, player.height);
+            const numSlices = 24;
+            const sliceWidth = images.player.width / numSlices;
+            const destSliceWidth = player.width / numSlices;
+            
+            for (let i = 0; i < numSlices; i++) {
+                const t = i / (numSlices - 1); // 0 (tail/left) to 1 (head/right)
+                const amplitude = (1 - t) * 14; // max wiggle at tail, stable head
+                const phase = player.swimTime - t * Math.PI * 1.6;
+                const wiggleY = Math.sin(phase) * amplitude;
+                
+                const sx = i * sliceWidth;
+                const sy = 0;
+                const sw = sliceWidth;
+                const sh = images.player.height;
+                
+                const dx = -player.width / 2 + i * destSliceWidth;
+                const dy = -player.height / 2 + wiggleY;
+                const dw = destSliceWidth + 0.5; // slight overlap to prevent gaps
+                const dh = player.height;
+                
+                ctx.drawImage(images.player, sx, sy, sw, sh, dx, dy, dw, dh);
+            }
         } else {
             // Draw a cute fallback canvas crocodile body
             ctx.fillStyle = '#2e7d32';
