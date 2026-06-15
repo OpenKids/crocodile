@@ -190,9 +190,6 @@ function updateDOMScene(index) {
         btnPrev.disabled = false;
         btnNext.disabled = false;
         
-        if (currentScene === 1) {
-            btnPrev.disabled = true;
-        }
         if (currentScene === 3) {
             btnNext.classList.add('hidden');
         } else {
@@ -225,13 +222,13 @@ const GAME_HEIGHT = 550;
 // Game state variables
 let gameActive = false;
 let hearts = 3;
-let timeLeft = 45; // Generous time limit
+let timeLeft = 30; // Shorter game time limit (30s)
 let cleanliness = 0; // Starts dirty (0%), ends clean (100%)
 let isInvulnerable = false;
 let invulnerableTime = 0;
 
 // Entities & Particle systems
-let player = { x: 150, y: 275, angle: 0, width: 140, height: 60 };
+let player = { x: 150, y: 275, angle: 0, width: 180, height: 75 }; // Larger player figure
 let entities = [];
 let particles = [];
 let floatingTexts = [];
@@ -342,7 +339,7 @@ function startGameEngine() {
 
     gameActive = true;
     hearts = 3;
-    timeLeft = 45;
+    timeLeft = 30;
     cleanliness = 0;
     isInvulnerable = false;
     invulnerableTime = 0;
@@ -415,11 +412,11 @@ function updateGameTimer() {
     }
 }
 
-// Spawns items (trash or friendly river animals)
+// Spawns items (trash or food/animals)
 function spawnEntity() {
-    const isTrash = Math.random() < 0.7;
+    const isTrash = Math.random() < 0.45; // 45% trash, 55% food
     const y = 50 + Math.random() * (GAME_HEIGHT - 100);
-    const vx = -(Math.random() * 2 + 2.5);
+    const vx = -(Math.random() * 2.5 + 3.0); // swim a bit faster
     
     if (isTrash) {
         const trashTypes = ['bottle', 'can', 'bag'];
@@ -431,8 +428,8 @@ function spawnEntity() {
             y: y,
             vx: vx,
             vy: (Math.random() - 0.5) * 0.5,
-            width: 50,
-            height: 50,
+            width: 75, // Larger trash (75px)
+            height: 75,
             angle: Math.random() * Math.PI,
             rotSpeed: (Math.random() - 0.5) * 0.05
         });
@@ -444,10 +441,10 @@ function spawnEntity() {
             subType: type,
             x: GAME_WIDTH + 50,
             y: y,
-            vx: vx * 1.2, // swim slightly faster
+            vx: vx * 1.1,
             vy: Math.sin(y) * 0.5,
-            width: type === 'fish' ? 45 : 60,
-            height: type === 'fish' ? 30 : 45,
+            width: type === 'fish' ? 75 : 85,  // Larger food items
+            height: type === 'fish' ? 50 : 65,
             wiggle: 0,
             wiggleSpeed: 0.15 + Math.random() * 0.1
         });
@@ -494,7 +491,7 @@ function updateGameLogic() {
     
     // 3. Update Entities
     const now = Date.now();
-    if (now - lastSpawnTime > 1000) {
+    if (now - lastSpawnTime > 600) { // Spawns every 600ms instead of 1000ms
         spawnEntity();
         lastSpawnTime = now;
     }
@@ -564,27 +561,14 @@ function updateGameLogic() {
 }
 
 function handleCollision(ent, index) {
-    if (ent.type === 'trash') {
-        playPopSound();
-        spawnParticles(ent.x, ent.y, '#ffd54f', 12);
-        
-        cleanliness = Math.min(100, cleanliness + 10);
-        updateProgressBarUI();
-        
-        spawnFloatingText(ent.x, ent.y - 20, "+10% Clean! 🧹", "#4caf50");
-        entities.splice(index, 1);
-        
-        if (cleanliness >= 100) {
-            triggerVictory();
-        }
-    } else if (ent.type === 'friend' && !isInvulnerable) {
+    if (ent.type === 'trash' && !isInvulnerable) {
         playBonkSound();
         spawnParticles(ent.x, ent.y, '#e57373', 15);
         
         hearts--;
         updateHeartsUI();
         
-        spawnFloatingText(player.x, player.y - 40, "Oops! Watch out! 🐟", "#e57373");
+        spawnFloatingText(player.x, player.y - 40, "Yuck! Trash! 🚮", "#e57373");
         
         isInvulnerable = true;
         invulnerableTime = 1200; // 1.2 seconds invulnerability
@@ -593,6 +577,20 @@ function handleCollision(ent, index) {
         
         if (hearts <= 0) {
             triggerGameOver();
+        }
+    } else if (ent.type === 'friend') {
+        playPopSound();
+        spawnParticles(ent.x, ent.y, '#ffd54f', 12);
+        
+        cleanliness = Math.min(100, cleanliness + 15); // Eat food to gain 15% energy
+        updateProgressBarUI();
+        
+        const foodLabel = ent.subType === 'fish' ? "Yum! Fish! 🐟" : "Yum! Turtle! 🐢";
+        spawnFloatingText(ent.x, ent.y - 20, foodLabel, "#4caf50");
+        entities.splice(index, 1);
+        
+        if (cleanliness >= 100) {
+            triggerVictory();
         }
     }
 }

@@ -366,7 +366,8 @@ body {
 .bg-river-img {
     width: 100%;
     height: 100%;
-    object-fit: cover;
+    object-fit: contain;
+    background-color: #f0fdf4; /* Light green background to stand out */
 }
 
 .clean-image-label {
