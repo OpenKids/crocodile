@@ -229,7 +229,7 @@ let invulnerableTime = 0;
 let score = 0;
 
 // Entities & Particle systems
-let player = { x: 150, y: 275, angle: 0, width: 220, height: 92 }; // Much larger player figure
+let player = { x: 150, y: 275, angle: 0, width: 190, height: 110 }; // Adjusted to match new sprite's aspect ratio (1.73:1)
 let entities = [];
 let particles = [];
 let floatingTexts = [];
