@@ -7,6 +7,7 @@
 let currentScene = 0;
 const totalScenes = 5; // Slide 0 (Start), Slide 1 (Ancient), Slide 2 (Look), Slide 3 (Pollution), Slide 4 (Game)
 let isSoundEnabled = true;
+let isChomping = false;
 
 // --- WEB AUDIO SYNTHESIS ---
 let audioCtx = null;
@@ -144,6 +145,91 @@ function playSadSound() {
     osc.stop(now + 0.6);
 }
 
+// Synthesize a crunching chomp sound
+function playChompSound() {
+    if (!isSoundEnabled) return;
+    initAudio();
+    const now = audioCtx.currentTime;
+    
+    // Low rumble / bite impact
+    const osc1 = audioCtx.createOscillator();
+    const gain1 = audioCtx.createGain();
+    osc1.type = 'triangle';
+    osc1.frequency.setValueAtTime(140, now);
+    osc1.frequency.exponentialRampToValueAtTime(30, now + 0.18);
+    gain1.gain.setValueAtTime(0.45, now);
+    gain1.gain.exponentialRampToValueAtTime(0.01, now + 0.2);
+    osc1.connect(gain1);
+    gain1.connect(audioCtx.destination);
+    osc1.start(now);
+    osc1.stop(now + 0.22);
+    
+    // A crisp crunch sound (noise-like)
+    const bufferSize = audioCtx.sampleRate * 0.15; // 0.15 seconds
+    const buffer = audioCtx.createBuffer(1, bufferSize, audioCtx.sampleRate);
+    const data = buffer.getChannelData(0);
+    for (let i = 0; i < bufferSize; i++) {
+        data[i] = Math.random() * 2 - 1;
+    }
+    const noise = audioCtx.createBufferSource();
+    noise.buffer = buffer;
+    
+    const noiseFilter = audioCtx.createBiquadFilter();
+    noiseFilter.type = 'bandpass';
+    noiseFilter.frequency.value = 800;
+    noiseFilter.Q.value = 3.0;
+    
+    const noiseGain = audioCtx.createGain();
+    noiseGain.gain.setValueAtTime(0.3, now);
+    noiseGain.gain.exponentialRampToValueAtTime(0.001, now + 0.15);
+    
+    noise.connect(noiseFilter);
+    noiseFilter.connect(noiseGain);
+    noiseGain.connect(audioCtx.destination);
+    
+    noise.start(now);
+    noise.stop(now + 0.18);
+}
+
+// Spawn DOM particles for title chomping effect
+function spawnDOMParticles(targetElement) {
+    const parent = targetElement.parentElement;
+    
+    // Create comic-style "CHOMP!" text label
+    const chompLabel = document.createElement('div');
+    chompLabel.className = 'chomp-text-burst';
+    chompLabel.textContent = 'CHOMP!';
+    chompLabel.style.left = `50%`;
+    chompLabel.style.top = `50%`;
+    parent.appendChild(chompLabel);
+    
+    // Spawn small colorful particle dots
+    const colors = ['#4caf50', '#81c784', '#ffb300', '#ff7043', '#ffffff'];
+    for (let i = 0; i < 16; i++) {
+        const particle = document.createElement('div');
+        particle.className = 'chomp-particle-dot';
+        
+        // Random angle and speed
+        const angle = Math.random() * Math.PI * 2;
+        const speed = 40 + Math.random() * 70;
+        const x = Math.cos(angle) * speed;
+        const y = Math.sin(angle) * speed;
+        
+        particle.style.setProperty('--tx', `${x}px`);
+        particle.style.setProperty('--ty', `${y}px`);
+        particle.style.backgroundColor = colors[Math.floor(Math.random() * colors.length)];
+        particle.style.left = `50%`;
+        particle.style.top = `50%`;
+        
+        parent.appendChild(particle);
+        
+        // Remove from DOM after animation completes
+        setTimeout(() => particle.remove(), 800);
+    }
+    
+    setTimeout(() => chompLabel.remove(), 1000);
+}
+
 // --- SCENE NAVIGATION ENGINE ---
 const scenes = [
     document.getElementById('scene-start'),
@@ -186,9 +272,31 @@ function updateDOMScene(index) {
     
     currentScene = index;
     
+    // Toggle header title visibility based on scene
+    const appTitle = document.querySelector('.app-title');
+    if (appTitle) {
+        if (currentScene === 0) {
+            appTitle.classList.add('hidden-title');
+        } else {
+            appTitle.classList.remove('hidden-title');
+        }
+    }
+    
     if (currentScene === 0) {
         btnPrev.classList.add('hidden');
         btnNext.classList.add('hidden');
+        
+        // Reset chomping animation state when entering home scene
+        const wordCroc = document.getElementById('word-crocodile');
+        const clickHint = document.querySelector('.click-hint');
+        const replacementImg = document.getElementById('croc-replacement-img');
+        if (wordCroc) wordCroc.classList.remove('swallowed');
+        if (clickHint) clickHint.style.display = 'block';
+        if (replacementImg) {
+            replacementImg.classList.remove('visible');
+            replacementImg.classList.add('hidden');
+        }
+        isChomping = false;
     } else {
         btnPrev.classList.remove('hidden');
         btnNext.classList.remove('hidden');
@@ -1255,6 +1363,83 @@ window.addEventListener('DOMContentLoaded', () => {
         navigateToScene(1);
     });
     
+    // Chomping Crocodile Easter Egg
+    const wordCroc = document.getElementById('word-crocodile');
+    const crocWrapper = document.getElementById('chomping-croc-wrapper');
+
+    if (wordCroc && crocWrapper) {
+        wordCroc.addEventListener('click', () => {
+            if (isChomping) return;
+            isChomping = true;
+
+            initAudio();
+            playPopSound();
+
+            const sceneStart = document.getElementById('scene-start');
+            const wordRect = wordCroc.getBoundingClientRect();
+            const sceneRect = sceneStart.getBoundingClientRect();
+
+            // Calculate exact centers relative to start scene
+            const targetX = (wordRect.left + wordRect.width / 2) - sceneRect.left;
+            const targetY = (wordRect.top + wordRect.height / 2) - sceneRect.top;
+
+            // Reset position offscreen
+            crocWrapper.style.transition = 'none';
+            crocWrapper.style.transform = `translate3d(${sceneRect.width + 200}px, ${targetY}px, 0)`;
+
+            // Force layout reflow
+            crocWrapper.offsetHeight;
+
+            // Apply smooth slide-in transition
+            crocWrapper.style.transition = 'transform 0.45s cubic-bezier(0.25, 1, 0.5, 1)';
+
+            // Reset bite state and slide in
+            crocWrapper.classList.remove('bite-active');
+            crocWrapper.style.transform = `translate3d(${targetX}px, ${targetY}px, 0)`;
+
+            // Bite/Chomp at 330ms
+            setTimeout(() => {
+                crocWrapper.classList.add('bite-active');
+                
+                // Play crunch sound
+                playChompSound();
+
+                // Eat the word (scale to 0)
+                wordCroc.classList.add('swallowed');
+                
+                // Hide click hint
+                const clickHint = document.querySelector('.click-hint');
+                if (clickHint) clickHint.style.display = 'none';
+
+                // Spawn crunch particles
+                spawnDOMParticles(wordCroc);
+            }, 330);
+
+            // Settle into the title instead of sliding offscreen!
+            setTimeout(() => {
+                // Settle: transition smoothly to resting position at scale 1
+                crocWrapper.style.transition = 'transform 0.5s cubic-bezier(0.25, 1, 0.5, 1)';
+                crocWrapper.style.transform = `translate3d(${targetX}px, ${targetY}px, 0)`;
+            }, 700);
+
+            // Swap with the static inline image at 1200ms
+            setTimeout(() => {
+                const replacementImg = document.getElementById('croc-replacement-img');
+                if (replacementImg) {
+                    replacementImg.classList.remove('hidden');
+                    setTimeout(() => {
+                        replacementImg.classList.add('visible');
+                    }, 50);
+                }
+                // Instantly move the wrapper offscreen now that the static replacement is visible
+                crocWrapper.style.transition = 'none';
+                crocWrapper.style.transform = `translate3d(${sceneRect.width + 200}px, ${targetY}px, 0) scale(0)`;
+                crocWrapper.classList.remove('bite-active');
+                playBubbleSound();
+            }, 1200);
+        });
+    }
+    
     // Next slide button
     btnNext.addEventListener('click', () => {
         initAudio();
@@ -1273,20 +1458,22 @@ window.addEventListener('DOMContentLoaded', () => {
     
     // Sound effects toggle button
     const btnSound = document.getElementById('btn-sound');
-    const iconSoundOn = btnSound.querySelector('.icon-sound-on');
-    const iconSoundOff = btnSound.querySelector('.icon-sound-off');
-    
-    btnSound.addEventListener('click', () => {
-        isSoundEnabled = !isSoundEnabled;
-        if (isSoundEnabled) {
-            iconSoundOn.classList.remove('hidden');
-            iconSoundOff.classList.add('hidden');
-            playPopSound();
-        } else {
-            iconSoundOn.classList.add('hidden');
-            iconSoundOff.classList.remove('hidden');
-        }
-    });
+    if (btnSound) {
+        const iconSoundOn = btnSound.querySelector('.icon-sound-on');
+        const iconSoundOff = btnSound.querySelector('.icon-sound-off');
+        
+        btnSound.addEventListener('click', () => {
+            isSoundEnabled = !isSoundEnabled;
+            if (isSoundEnabled) {
+                iconSoundOn.classList.remove('hidden');
+                iconSoundOff.classList.add('hidden');
+                playPopSound();
+            } else {
+                iconSoundOn.classList.add('hidden');
+                iconSoundOff.classList.remove('hidden');
+            }
+        });
+    }
     
     // Replay/Restart buttons
     document.getElementById('btn-restart').addEventListener('click', () => {

@@ -16,13 +16,8 @@
 
         <!-- Global Header -->
         <header id="global-header">
-            <h1 class="app-title">🐊 Happy World Crocodile Day!</h1>
-            <div class="audio-controls">
-                <button id="btn-sound" class="icon-btn" title="Toggle Sound Effects" style="font-size: 1.4rem; display: flex; align-items: center; justify-content: center;">
-                    <span class="icon-sound-on">🔊</span>
-                    <span class="icon-sound-off hidden">🔇</span>
-                </button>
-            </div>
+            <h1 class="app-title hidden-title">🐊 Happy World Crocodile Day!</h1>
+
         </header>
 
         <!-- Main Presentation / Play Area -->
@@ -31,15 +26,21 @@
             <!-- SCENE 0: START SCENE -->
             <section id="scene-start" class="slide active">
                 <div class="slide-content start-layout">
-                    <div class="logo-area">
-                        <div class="start-crocodile-container">
-                            <img src="assets/cute_croc_logo.png" alt="Cute Crocodile Mascot" class="cute-croc animated-croc">
-                        </div>
+                    <!-- Chomping Crocodile Overlay -->
+                    <div id="chomping-croc-wrapper" class="chomping-croc-wrapper">
+                        <img id="chomp-croc-img" src="assets/croc_mouth_open.png" alt="Chomping Crocodile" class="chomp-croc-img">
                     </div>
-                    <div class="start-bubble glass-card">
-                        <h2>World Crocodile Day!</h2>
-                        <p class="story-text">Let's learn about crocodiles and play a fun river game!</p>
-                    </div>
+
+                    <!-- Clean minimal title without card borders -->
+                    <h2 class="start-title-minimal">
+                        <span>World</span>
+                        <span class="title-croc-wrapper">
+                            <span id="word-crocodile" class="clickable-croc-word">Crocodile</span>
+                            <img id="croc-replacement-img" src="assets/croc_mouth_open.png" alt="Crocodile Mascot" class="croc-replacement-img hidden">
+                        </span>
+                        <span>Day!</span>
+                    </h2>
+                    <div class="start-subtitle-minimal">June 17th</div>
                     <button id="btn-begin" class="pulse-btn primary-btn">Begin Adventure ➔</button>
                 </div>
             </section>
