@@ -1398,3 +1398,17 @@ body {
     transform: scale(1.25);
 }
 
+/* Collage Grid Layout */
+.image-grid-collage {
+    display: grid;
+    grid-template-columns: 1.1fr 0.9fr;
+    grid-template-rows: 1fr 1fr;
+    gap: 16px;
+}
+.grid-span-2 {
+    grid-row: span 2;
+}
+.image-grid-collage .fossil-image-card {
+    height: 100%;
+}
+
