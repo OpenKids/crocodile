@@ -256,6 +256,7 @@ const images = {
     bottle: new Image(),
     can: new Image(),
     bag: new Image(),
+    net: new Image(),
     fish: new Image(),
     fishGold: new Image(),
     turtle: new Image(),
@@ -273,6 +274,7 @@ images.playerOpen.src = 'assets/game_crocodile_open.png';
 images.bottle.src = 'assets/game_bottle.png';
 images.can.src = 'assets/game_can.png';
 images.bag.src = 'assets/game_bag.png';
+images.net.src = 'assets/game_net.png';
 images.fish.src = 'assets/game_fish.png';
 images.fishGold.src = 'assets/game_fish_gold.png';
 images.turtle.src = 'assets/game_turtle.png';
@@ -446,7 +448,7 @@ function spawnEntity() {
     const vx = -(Math.random() * 1.5 + 2.0); // Slower movement
     
     if (isTrash) {
-        const trashTypes = ['bottle', 'can', 'bag'];
+        const trashTypes = ['bottle', 'can', 'bag', 'net'];
         const type = trashTypes[Math.floor(Math.random() * trashTypes.length)];
         let w = 75, h = 75;
         if (type === 'bottle') {
@@ -455,6 +457,8 @@ function spawnEntity() {
             w = 60; h = 75; // 0.8 ratio
         } else if (type === 'bag') {
             w = 75; h = 75; // 1.0 ratio
+        } else if (type === 'net') {
+            w = 85; h = 85; // 1.0 ratio
         }
         entities.push({
             type: 'trash',
@@ -763,6 +767,7 @@ function renderGame() {
             if (ent.subType === 'bottle') img = images.bottle;
             if (ent.subType === 'can') img = images.can;
             if (ent.subType === 'bag') img = images.bag;
+            if (ent.subType === 'net') img = images.net;
             
             if (img && img.complete) {
                 ctx.drawImage(img, -ent.width/2, -ent.height/2, ent.width, ent.height);
