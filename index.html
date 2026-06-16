@@ -48,24 +48,63 @@
             <!-- SCENE 1: ANCIENT CROCODILE -->
             <section id="scene-ancient" class="slide">
                 <div class="slide-content side-by-side-layout">
-                    <div class="fossil-image-card">
-                        <img src="assets/ancient_croc_fossil.jpg" alt="Ancient Crocodile Skeleton Fossil" class="fossil-img">
-                        <span class="fossil-badge">Skeleton Fossil</span>
+                    <div class="fossil-images-container" style="display: flex; flex-direction: column; gap: 16px; flex: 1.2; height: 90%; justify-content: center;">
+                        <div class="fossil-image-card" style="flex: 1; height: 45%;">
+                            <img src="assets/fossil_of_croc1.jpeg" alt="Ancient Crocodile Fossil" class="fossil-img">
+                            <span class="fossil-badge">Ancient Fossil</span>
+                        </div>
+                        <div class="fossil-image-card" style="flex: 1; height: 45%;">
+                            <img src="assets/crocodile-euparkeria-DTF477.jpg" alt="Crocodilian Ancestor Euparkeria" class="fossil-img">
+                            <span class="fossil-badge">Euparkeria Ancestor</span>
+                        </div>
                     </div>
-                    <div class="fossil-image-card">
-                        <img src="assets/croc_skull_fossil.jpg" alt="Ancient Crocodile Skull Fossil" class="fossil-img">
-                        <span class="fossil-badge">Skull Fossil</span>
+                    <div class="pollution-text-card glass-card" style="flex: 1;">
+                        <h2>Ancient Giants 🦖</h2>
+                        <p class="story-text">Crocodile animals are amazing reptiles!</p>
+                        <p class="story-text">They have lived on Earth for a very, very long time. Their family started around 83 million years ago.</p>
+                        <div class="story-action-tip">
+                            <span>🦕</span> That means they were already here when dinosaurs lived!
+                        </div>
                     </div>
                 </div>
             </section>
 
             <!-- SCENE 2: CROCODILE LOOK (SIMPLE PICTURE DISPLAY) -->
             <section id="scene-look" class="slide">
-                <div class="slide-content full-layout">
-                    <div class="exploration-area">
-                        <!-- Simple, clean image displaying the complete crocodile -->
-                        <img src="assets/crocodile_side.jpg" alt="Complete Crocodile Side View" class="bg-river-img">
-                        <div class="clean-image-label">Nile Crocodile</div>
+                <div class="slide-content side-by-side-layout">
+                    <div class="slideshow-container fossil-image-card" style="flex: 1.2; height: 90%; position: relative;">
+                        <div class="mySlides fade active">
+                            <img src="assets/pexels-likeboss-lertpongsaporn-32563063-7361031.jpg" alt="Crocodile Close-up" class="fossil-img">
+                            <span class="fossil-badge">Sharp Teeth & Eyes</span>
+                        </div>
+                        <div class="mySlides fade">
+                            <img src="assets/pexels-huibre-venter-14619920-6407978.jpg" alt="Crocodile Body" class="fossil-img">
+                            <span class="fossil-badge">Long Body & Tail</span>
+                        </div>
+                        <div class="mySlides fade">
+                            <img src="assets/pexels-diego-ferrari-33201434-13979340.jpg" alt="Crocodile in Water" class="fossil-img">
+                            <span class="fossil-badge">Low in the Water</span>
+                        </div>
+                        <button class="slide-nav-btn prev-slide" id="btn-look-prev">❮</button>
+                        <button class="slide-nav-btn next-slide" id="btn-look-next">❯</button>
+                        <div class="slide-dots-container" id="look-dots">
+                            <span class="slide-dot active"></span>
+                            <span class="slide-dot"></span>
+                            <span class="slide-dot"></span>
+                        </div>
+                    </div>
+                    <div class="pollution-text-card glass-card" style="flex: 1;">
+                        <h2>Special Features! 🐊</h2>
+                        <p class="story-text">They look very special! Here is what makes them unique:</p>
+                        <ul class="features-list" style="list-style: none; padding: 0; display: flex; flex-direction: column; gap: 10px;">
+                            <li>🐊 <strong>Body & Legs:</strong> They have long bodies and short legs.</li>
+                            <li>🐟 <strong>Strong Tail:</strong> They have powerful tails for fast swimming.</li>
+                            <li>🛡️ <strong>Scaly Skin:</strong> They have bumpy, protective scaly skin.</li>
+                            <li>🦷 <strong>Sharp Teeth:</strong> They have many sharp teeth for eating.</li>
+                        </ul>
+                        <div class="story-action-tip" style="margin-top: 15px;">
+                            <span>👀</span> Their eyes and nose are near the top of their head. So they can stay low in the water, but still see and breathe!
+                        </div>
                     </div>
                 </div>
             </section>
@@ -73,15 +112,38 @@
             <!-- SCENE 3: RIVER POLLUTION -->
             <section id="scene-pollution" class="slide">
                 <div class="slide-content side-by-side-layout">
-                    <div class="fossil-image-card pollution-card">
-                        <img src="assets/polluted_river.jpg" alt="Real photograph of a polluted river" class="fossil-img">
-                        <span class="fossil-badge danger-badge">⚠️ Polluted River</span>
+                    <div class="slideshow-container fossil-image-card pollution-card" style="flex: 1.2; height: 90%; position: relative;">
+                        <div class="pollutionSlides fade active">
+                            <img src="assets/pexels-silverkblack-36713502.jpg" alt="Clean River Home" class="fossil-img">
+                            <span class="fossil-badge">Healthy River Home</span>
+                        </div>
+                        <div class="pollutionSlides fade">
+                            <img src="assets/Miriam-Boucher.-American-crocodiles-in-Belize-vie-for-a-garbage-bag-polluting-their-mangrove-habitats.-Crocodiles-have-complex-and-fascinating-social-interactions-which-can-be-thr-1536x1024.webp" alt="Crocodiles fighting for garbage bag" class="fossil-img">
+                            <span class="fossil-badge danger-badge">⚠️ Garbage in Mangroves</span>
+                        </div>
+                        <div class="pollutionSlides fade">
+                            <img src="assets/Miriam-Boucher.-An-American-crocodile-eats-garbage-polluting-its-coastal-home.-Crocodiles-are-found-in-inherently-fragile-habitats-of-freshwaters-and-coasts-which-have-high-human-p-1536x1024.webp" alt="Crocodile eating plastic" class="fossil-img">
+                            <span class="fossil-badge danger-badge">⚠️ Eating Plastic Waste</span>
+                        </div>
+                        <button class="slide-nav-btn prev-slide" id="btn-pollution-prev">❮</button>
+                        <button class="slide-nav-btn next-slide" id="btn-pollution-next">❯</button>
+                        <div class="slide-dots-container" id="pollution-dots">
+                            <span class="pollution-dot active"></span>
+                            <span class="pollution-dot"></span>
+                            <span class="pollution-dot"></span>
+                        </div>
                     </div>
-                    <div class="pollution-text-card glass-card">
+                    <div class="pollution-text-card glass-card" style="flex: 1;">
                         <h2>Protect Their Homes! 🌿</h2>
-                        <p class="story-text">Every day, trash like plastic bottles, bags, and nets end up in our rivers. This makes the water dirty and unsafe for crocodiles and fish!</p>
-                        <div class="story-action-tip">
-                            <span>💡</span> We can help by recycling our trash and keeping our waters clean!
+                        <p class="story-text">Crocodile animals love rivers, lakes, and wetlands. The river is their beautiful home!</p>
+                        <p class="story-text">But trash in the water makes it dirty and dangerous. We must protect them by:</p>
+                        <ul class="features-list" style="list-style: none; padding: 0; display: flex; flex-direction: column; gap: 8px;">
+                            <li>🚯 <strong>No Littering:</strong> We should not throw trash in the water.</li>
+                            <li>🧼 <strong>Keep Waters Clean:</strong> We should keep our rivers sparkling and clean.</li>
+                            <li>🌳 <strong>Save Nature:</strong> We should protect trees and plants near the river.</li>
+                        </ul>
+                        <div class="story-action-tip" style="margin-top: 12px;">
+                            <span>🐠</span> Clean rivers help fish, birds, plants, and crocodiles live happily together!
                         </div>
                     </div>
                 </div>

@@ -1485,4 +1485,60 @@ window.addEventListener('DOMContentLoaded', () => {
         playChimeSound();
         startGameEngine();
     });
+
+    // --- LOOK SLIDESHOW LOGIC ---
+    let lookSlideIndex = 0;
+    const lookSlides = document.querySelectorAll('.mySlides');
+    const lookDots = document.querySelectorAll('#look-dots .slide-dot');
+    
+    function showLookSlide(n) {
+        if (lookSlides.length === 0) return;
+        lookSlides[lookSlideIndex].classList.remove('active');
+        lookDots[lookSlideIndex].classList.remove('active');
+        
+        lookSlideIndex = (n + lookSlides.length) % lookSlides.length;
+        
+        lookSlides[lookSlideIndex].classList.add('active');
+        lookDots[lookSlideIndex].classList.add('active');
+    }
+    
+    const btnLookPrev = document.getElementById('btn-look-prev');
+    const btnLookNext = document.getElementById('btn-look-next');
+    if (btnLookPrev) btnLookPrev.addEventListener('click', () => { playPopSound(); showLookSlide(lookSlideIndex - 1); });
+    if (btnLookNext) btnLookNext.addEventListener('click', () => { playPopSound(); showLookSlide(lookSlideIndex + 1); });
+    
+    lookDots.forEach((dot, idx) => {
+        dot.addEventListener('click', () => {
+            playPopSound();
+            showLookSlide(idx);
+        });
+    });
+
+    // --- POLLUTION SLIDESHOW LOGIC ---
+    let pollutionSlideIndex = 0;
+    const pollutionSlides = document.querySelectorAll('.pollutionSlides');
+    const pollutionDots = document.querySelectorAll('#pollution-dots .pollution-dot');
+    
+    function showPollutionSlide(n) {
+        if (pollutionSlides.length === 0) return;
+        pollutionSlides[pollutionSlideIndex].classList.remove('active');
+        pollutionDots[pollutionSlideIndex].classList.remove('active');
+        
+        pollutionSlideIndex = (n + pollutionSlides.length) % pollutionSlides.length;
+        
+        pollutionSlides[pollutionSlideIndex].classList.add('active');
+        pollutionDots[pollutionSlideIndex].classList.add('active');
+    }
+    
+    const btnPollutionPrev = document.getElementById('btn-pollution-prev');
+    const btnPollutionNext = document.getElementById('btn-pollution-next');
+    if (btnPollutionPrev) btnPollutionPrev.addEventListener('click', () => { playPopSound(); showPollutionSlide(pollutionSlideIndex - 1); });
+    if (btnPollutionNext) btnPollutionNext.addEventListener('click', () => { playPopSound(); showPollutionSlide(pollutionSlideIndex + 1); });
+    
+    pollutionDots.forEach((dot, idx) => {
+        dot.addEventListener('click', () => {
+            playPopSound();
+            showPollutionSlide(idx);
+        });
+    });
 });
