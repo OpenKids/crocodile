@@ -358,43 +358,77 @@ let lastSpawnTime = 0;
 let gameTimerId = null;
 let gameAnimationFrameId = null;
 
-// Preloaded images
-const images = {
-    player: new Image(),
-    playerOpen: new Image(),
-    bottle: new Image(),
-    can: new Image(),
-    bag: new Image(),
-    net: new Image(),
-    fish: new Image(),
-    fishGold: new Image(),
-    turtle: new Image(),
-    frog: new Image(),
-    meat: new Image(),
-    crab: new Image(),
-    duckling: new Image(),
-    dragonfly: new Image(),
-    snail: new Image(),
-    shrimp: new Image(),
-    riverBg: new Image()
+// Preloaded images and loading manager
+const gameImageSources = {
+    player: 'assets/game_crocodile.png',
+    playerOpen: 'assets/game_crocodile_open.png',
+    bottle: 'assets/game_bottle.png',
+    can: 'assets/game_can.png',
+    bag: 'assets/game_bag.png',
+    net: 'assets/game_net.png',
+    fish: 'assets/game_fish.png',
+    fishGold: 'assets/game_fish_gold.png',
+    turtle: 'assets/game_turtle.png',
+    frog: 'assets/game_frog.png',
+    meat: 'assets/game_meat.png',
+    crab: 'assets/game_crab.png',
+    duckling: 'assets/game_duckling.png',
+    dragonfly: 'assets/game_dragonfly.png',
+    snail: 'assets/game_snail.png',
+    shrimp: 'assets/game_shrimp.png',
+    riverBg: 'assets/game_river_bg.png'
 };
-images.player.src = 'assets/game_crocodile.png';
-images.playerOpen.src = 'assets/game_crocodile_open.png';
-images.bottle.src = 'assets/game_bottle.png';
-images.can.src = 'assets/game_can.png';
-images.bag.src = 'assets/game_bag.png';
-images.net.src = 'assets/game_net.png';
-images.fish.src = 'assets/game_fish.png';
-images.fishGold.src = 'assets/game_fish_gold.png';
-images.turtle.src = 'assets/game_turtle.png';
-images.frog.src = 'assets/game_frog.png';
-images.meat.src = 'assets/game_meat.png';
-images.crab.src = 'assets/game_crab.png';
-images.duckling.src = 'assets/game_duckling.png';
-images.dragonfly.src = 'assets/game_dragonfly.png';
-images.snail.src = 'assets/game_snail.png';
-images.shrimp.src = 'assets/game_shrimp.png';
-images.riverBg.src = 'assets/game_river_bg.png';
+
+const staticImageUrls = [
+    'assets/croc_mouth_open.png',
+    'assets/fossil_of_croc1.jpeg',
+    'assets/crocodile-euparkeria-DTF477.jpg',
+    'assets/pexels-likeboss-lertpongsaporn-32563063-7361031.jpg',
+    'assets/pexels-huibre-venter-14619920-6407978.jpg',
+    'assets/pexels-diego-ferrari-33201434-13979340.jpg',
+    'assets/pexels-silverkblack-36713502.jpg',
+    'assets/Miriam-Boucher.-American-crocodiles-in-Belize-vie-for-a-garbage-bag-polluting-their-mangrove-habitats.-Crocodiles-have-complex-and-fascinating-social-interactions-which-can-be-thr-1536x1024.webp',
+    'assets/Miriam-Boucher.-An-American-crocodile-eats-garbage-polluting-its-coastal-home.-Crocodiles-are-found-in-inherently-fragile-habitats-of-freshwaters-and-coasts-which-have-high-human-p-1536x1024.webp'
+];
+
+const images = {};
+let totalImagesCount = Object.keys(gameImageSources).length + staticImageUrls.length;
+let loadedImagesCount = 0;
+
+function updatePreloader() {
+    loadedImagesCount++;
+    const progress = Math.min(Math.round((loadedImagesCount / totalImagesCount) * 100), 100);
+    const progressBar = document.getElementById('loading-progress-bar');
+    const loadingText = document.getElementById('loading-text');
+    
+    if (progressBar) progressBar.style.width = `${progress}%`;
+    if (loadingText) loadingText.textContent = `Loading adventure assets (${progress}%)`;
+    
+    if (loadedImagesCount >= totalImagesCount) {
+        setTimeout(() => {
+            const preloader = document.getElementById('app-loading-screen');
+            if (preloader) {
+                preloader.classList.add('fade-out');
+            }
+        }, 300); // smooth minor delay for premium feel
+    }
+}
+
+// Instantiate and load all game images
+for (const [key, src] of Object.entries(gameImageSources)) {
+    images[key] = new Image();
+    images[key].onload = updatePreloader;
+    images[key].onerror = updatePreloader;
+    images[key].src = src;
+}
+
+// Load static slide images to ensure everything is cached and loaded
+staticImageUrls.forEach(src => {
+    const img = new Image();
+    img.onload = updatePreloader;
+    img.onerror = updatePreloader;
+    img.src = src;
+});
 
 let bgScrollX = 0;
 

@@ -8,8 +8,49 @@
     <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
     <link href="https://fonts.googleapis.com/css2?family=Fredoka:wght@300..700&display=swap" rel="stylesheet">
     <link rel="stylesheet" href="styles.css">
+    <!-- Preload key images and game assets for bad network conditions -->
+    <link rel="preload" href="assets/croc_mouth_open.png" as="image" fetchpriority="high">
+    <link rel="preload" href="assets/fossil_of_croc1.jpeg" as="image">
+    <link rel="preload" href="assets/crocodile-euparkeria-DTF477.jpg" as="image">
+    <link rel="preload" href="assets/pexels-likeboss-lertpongsaporn-32563063-7361031.jpg" as="image">
+    <link rel="preload" href="assets/pexels-huibre-venter-14619920-6407978.jpg" as="image">
+    <link rel="preload" href="assets/pexels-diego-ferrari-33201434-13979340.jpg" as="image">
+    <link rel="preload" href="assets/pexels-silverkblack-36713502.jpg" as="image">
+    <link rel="preload" href="assets/Miriam-Boucher.-American-crocodiles-in-Belize-vie-for-a-garbage-bag-polluting-their-mangrove-habitats.-Crocodiles-have-complex-and-fascinating-social-interactions-which-can-be-thr-1536x1024.webp" as="image">
+    <link rel="preload" href="assets/Miriam-Boucher.-An-American-crocodile-eats-garbage-polluting-its-coastal-home.-Crocodiles-are-found-in-inherently-fragile-habitats-of-freshwaters-and-coasts-which-have-high-human-p-1536x1024.webp" as="image">
+    
+    <!-- Preload Game Assets -->
+    <link rel="preload" href="assets/game_crocodile.png" as="image">
+    <link rel="preload" href="assets/game_crocodile_open.png" as="image">
+    <link rel="preload" href="assets/game_bottle.png" as="image">
+    <link rel="preload" href="assets/game_can.png" as="image">
+    <link rel="preload" href="assets/game_bag.png" as="image">
+    <link rel="preload" href="assets/game_net.png" as="image">
+    <link rel="preload" href="assets/game_fish.png" as="image">
+    <link rel="preload" href="assets/game_fish_gold.png" as="image">
+    <link rel="preload" href="assets/game_turtle.png" as="image">
+    <link rel="preload" href="assets/game_frog.png" as="image">
+    <link rel="preload" href="assets/game_meat.png" as="image">
+    <link rel="preload" href="assets/game_crab.png" as="image">
+    <link rel="preload" href="assets/game_duckling.png" as="image">
+    <link rel="preload" href="assets/game_dragonfly.png" as="image">
+    <link rel="preload" href="assets/game_snail.png" as="image">
+    <link rel="preload" href="assets/game_shrimp.png" as="image">
+    <link rel="preload" href="assets/game_river_bg.png" as="image">
 </head>
 <body>
+    <!-- Playful Startup Loading Overlay -->
+    <div id="app-loading-screen" class="loading-overlay">
+        <div class="loading-card glass-card animate-pop">
+            <div class="loading-croc-animation">🐊🫧</div>
+            <h2 class="loading-title">Preparing Your Adventure...</h2>
+            <div class="loading-progress-container">
+                <div id="loading-progress-bar" class="loading-progress-bar"></div>
+            </div>
+            <div id="loading-text" class="loading-text">Loading game assets (0%)</div>
+        </div>
+    </div>
+
     <div id="app-container">
         <!-- Background Ambient River Layer -->
         <div class="ambient-river"></div>
