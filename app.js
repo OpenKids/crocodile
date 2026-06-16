@@ -5,7 +5,7 @@
 
 // --- STATE MANAGEMENT ---
 let currentScene = 0;
-const totalScenes = 4; // Slide 0 (Start), Slide 1 (Ancient), Slide 2 (Look), Slide 3 (Game)
+const totalScenes = 5; // Slide 0 (Start), Slide 1 (Ancient), Slide 2 (Look), Slide 3 (Pollution), Slide 4 (Game)
 let isSoundEnabled = true;
 
 // --- WEB AUDIO SYNTHESIS ---
@@ -149,6 +149,7 @@ const scenes = [
     document.getElementById('scene-start'),
     document.getElementById('scene-ancient'),
     document.getElementById('scene-look'),
+    document.getElementById('scene-pollution'),
     document.getElementById('scene-game')
 ];
 
@@ -160,7 +161,7 @@ function navigateToScene(index) {
     if (index < 0 || index >= totalScenes) return;
     
     // Stop running games if navigating away
-    if (currentScene === 3 && index !== 3) {
+    if (currentScene === 4 && index !== 4) {
         stopGameEngine();
     }
     
@@ -195,14 +196,14 @@ function updateDOMScene(index) {
         btnPrev.disabled = false;
         btnNext.disabled = false;
         
-        if (currentScene === 3) {
+        if (currentScene === 4) {
             btnNext.classList.add('hidden');
         } else {
             btnNext.classList.remove('hidden');
         }
     }
     
-    if (currentScene === 3) {
+    if (currentScene === 4) {
         playChimeSound();
         startGameEngine();
     } else {
