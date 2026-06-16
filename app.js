@@ -165,7 +165,12 @@ function navigateToScene(index) {
     }
     
     if (document.startViewTransition) {
-        document.startViewTransition(() => updateDOMScene(index));
+        try {
+            document.startViewTransition(() => updateDOMScene(index));
+        } catch (e) {
+            console.warn("View Transition failed, using fallback navigation", e);
+            updateDOMScene(index);
+        }
     } else {
         updateDOMScene(index);
     }
@@ -222,7 +227,7 @@ const GAME_HEIGHT = 550;
 // Game state variables
 let gameActive = false;
 let hearts = 3;
-let timeLeft = 30; // Shorter game time limit (30s)
+let timeLeft = 20; // Shorter game time limit (20s)
 let cleanliness = 0; // Starts dirty (0%), ends clean (100%)
 let isInvulnerable = false;
 let invulnerableTime = 0;
@@ -252,7 +257,15 @@ const images = {
     can: new Image(),
     bag: new Image(),
     fish: new Image(),
+    fishGold: new Image(),
     turtle: new Image(),
+    frog: new Image(),
+    meat: new Image(),
+    crab: new Image(),
+    duckling: new Image(),
+    dragonfly: new Image(),
+    snail: new Image(),
+    shrimp: new Image(),
     riverBg: new Image()
 };
 images.player.src = 'assets/game_crocodile.png';
@@ -261,7 +274,15 @@ images.bottle.src = 'assets/game_bottle.png';
 images.can.src = 'assets/game_can.png';
 images.bag.src = 'assets/game_bag.png';
 images.fish.src = 'assets/game_fish.png';
+images.fishGold.src = 'assets/game_fish_gold.png';
 images.turtle.src = 'assets/game_turtle.png';
+images.frog.src = 'assets/game_frog.png';
+images.meat.src = 'assets/game_meat.png';
+images.crab.src = 'assets/game_crab.png';
+images.duckling.src = 'assets/game_duckling.png';
+images.dragonfly.src = 'assets/game_dragonfly.png';
+images.snail.src = 'assets/game_snail.png';
+images.shrimp.src = 'assets/game_shrimp.png';
 images.riverBg.src = 'assets/game_river_bg.png';
 
 let bgScrollX = 0;
@@ -348,7 +369,7 @@ function startGameEngine() {
 
     gameActive = true;
     hearts = 3;
-    timeLeft = 30;
+    timeLeft = 20;
     cleanliness = 0;
     score = 0;
     isInvulnerable = false;
@@ -420,9 +441,9 @@ function updateGameTimer() {
 
 // Spawns items (trash or food/animals)
 function spawnEntity() {
-    const isTrash = Math.random() < 0.45; // 45% trash, 55% food
+    const isTrash = Math.random() < 0.22; // Decreased trash ratio to 22%
     const y = 50 + Math.random() * (GAME_HEIGHT - 100);
-    const vx = -(Math.random() * 4.0 + 4.5); // Much faster movement
+    const vx = -(Math.random() * 1.5 + 2.0); // Slower movement
     
     if (isTrash) {
         const trashTypes = ['bottle', 'can', 'bag'];
@@ -448,21 +469,29 @@ function spawnEntity() {
             rotSpeed: (Math.random() - 0.5) * 0.08 // faster spin
         });
     } else {
-        const friendTypes = ['fish', 'turtle'];
+        const friendTypes = ['fish', 'fish_gold', 'turtle', 'frog', 'crab', 'duckling', 'shrimp'];
         const type = friendTypes[Math.floor(Math.random() * friendTypes.length)];
         let w = 75, h = 50;
-        if (type === 'fish') {
-            w = 72; h = 55; // 1.31 ratio
+        if (type === 'fish' || type === 'fish_gold') {
+            w = 78; h = 60;
         } else if (type === 'turtle') {
-            w = 88; h = 55; // 1.6 ratio
+            w = 80; h = 65;
+        } else if (type === 'frog') {
+            w = 110; h = 92; // Much bigger frog
+        } else if (type === 'crab') {
+            w = 76; h = 68;
+        } else if (type === 'duckling') {
+            w = 105; h = 98; // Much bigger duckling
+        } else if (type === 'shrimp') {
+            w = 76; h = 58;
         }
         entities.push({
             type: 'friend',
             subType: type,
             x: GAME_WIDTH + 50,
             y: y,
-            vx: vx * 1.15, // Food moves even faster
-            vy: Math.sin(y) * 0.8, // subtle wavy swimming
+            vx: vx * 1.15,
+            vy: type === 'frog' ? (Math.random() - 0.5) * 1.5 : Math.sin(y) * 0.8, // frog has active vertical hopping motion
             width: w,
             height: h,
             wiggle: 0,
@@ -528,14 +557,14 @@ function updateGameLogic() {
     }
     
     // 2. Scroll River Background
-    bgScrollX -= 2.0; // background scrolls slightly faster to match item speeds
+    bgScrollX -= 1.2; // background scrolls slightly slower to match item speeds
     if (bgScrollX <= -GAME_WIDTH) {
         bgScrollX = 0;
     }
     
     // 3. Update Entities
     const now = Date.now();
-    if (now - lastSpawnTime > 350) { // Spawns every 350ms for high density challenge
+    if (now - lastSpawnTime > 600) { // Spawns every 600ms (slower rate)
         spawnEntity();
         lastSpawnTime = now;
     }
@@ -633,7 +662,16 @@ function handleCollision(ent, index) {
         score += 150; // Add 150 score points
         updateProgressBarUI();
         
-        const foodLabel = ent.subType === 'fish' ? "Yum! Fish! 🐟" : "Yum! Turtle! 🐢";
+        let foodLabel = "Yum! Fish! 🐟";
+        if (ent.subType === 'fish_gold') foodLabel = "Awesome Gold Fish! 🐠";
+        if (ent.subType === 'turtle') foodLabel = "Yum! Turtle! 🐢";
+        if (ent.subType === 'frog') foodLabel = "Crunchy Frog! 🐸";
+        if (ent.subType === 'meat') foodLabel = "Delicious Meat! 🥩";
+        if (ent.subType === 'crab') foodLabel = "Tasty Crab! 🦀";
+        if (ent.subType === 'duckling') foodLabel = "Cute Duckling! 🦆";
+        if (ent.subType === 'dragonfly') foodLabel = "Zippy Dragonfly! 🦟";
+        if (ent.subType === 'snail') foodLabel = "Chewy Snail! 🐌";
+        if (ent.subType === 'shrimp') foodLabel = "Crispy Shrimp! 🦐";
         spawnFloatingText(ent.x, ent.y - 20, foodLabel, "#4caf50");
         entities.splice(index, 1);
     }
@@ -696,14 +734,7 @@ function renderGame() {
         ctx.fillRect(0, 0, GAME_WIDTH, GAME_HEIGHT);
     }
     
-    // 2. Draw Ambient Murky overlay (greenish-brown fades to clear blue based on cleanliness)
-    const dirtyOpacity = 0.55 - (cleanliness / 100) * 0.55;
-    ctx.fillStyle = `rgba(109, 110, 44, ${dirtyOpacity})`;
-    ctx.fillRect(0, 0, GAME_WIDTH, GAME_HEIGHT);
-    
-    const cleanOpacity = (cleanliness / 100) * 0.25;
-    ctx.fillStyle = `rgba(0, 229, 255, ${cleanOpacity})`;
-    ctx.fillRect(0, 0, GAME_WIDTH, GAME_HEIGHT);
+    // 2. Draw Ambient Murky overlay - disabled color shifts as requested
     
     // 3. Draw Ambient Bubbles
     ctx.fillStyle = 'rgba(255, 255, 255, 0.2)';
@@ -745,13 +776,27 @@ function renderGame() {
         } else if (ent.type === 'friend') {
             let img = null;
             if (ent.subType === 'fish') img = images.fish;
+            if (ent.subType === 'fish_gold') img = images.fishGold;
             if (ent.subType === 'turtle') img = images.turtle;
+            if (ent.subType === 'frog') img = images.frog;
+            if (ent.subType === 'meat') img = images.meat;
+            if (ent.subType === 'crab') img = images.crab;
+            if (ent.subType === 'duckling') img = images.duckling;
+            if (ent.subType === 'dragonfly') img = images.dragonfly;
+            if (ent.subType === 'snail') img = images.snail;
+            if (ent.subType === 'shrimp') img = images.shrimp;
             
-            if (img && img.complete) {
+            if (img && img.complete && img.naturalWidth > 0) {
                 // If it is a fish, add a subtle wiggle angle
-                if (ent.subType === 'fish') {
+                if (ent.subType === 'fish' || ent.subType === 'fish_gold') {
                     const fishWiggle = Math.sin(ent.wiggle) * 0.08;
                     ctx.rotate(fishWiggle);
+                }
+                if (ent.subType === 'frog') {
+                    ctx.scale(1, 1 + Math.sin(ent.wiggle) * 0.1);
+                }
+                if (ent.subType === 'dragonfly') {
+                    ctx.scale(1 + Math.sin(ent.wiggle * 2) * 0.05, 1);
                 }
                 ctx.drawImage(img, -ent.width/2, -ent.height/2, ent.width, ent.height);
             } else {
@@ -782,6 +827,302 @@ function renderGame() {
                     ctx.beginPath();
                     ctx.arc(11, -3, 2, 0, Math.PI * 2);
                     ctx.fill();
+                } else if (ent.subType === 'fish_gold') {
+                    // Golden Fish body
+                    ctx.fillStyle = '#ffa726';
+                    ctx.beginPath();
+                    ctx.ellipse(0, 0, 22, 12, 0, 0, Math.PI * 2);
+                    ctx.fill();
+                    
+                    // Tail (wiggle)
+                    const tailWiggle = Math.sin(ent.wiggle) * 12;
+                    ctx.beginPath();
+                    ctx.moveTo(-20, 0);
+                    ctx.lineTo(-35, -10 + tailWiggle);
+                    ctx.lineTo(-30, 0);
+                    ctx.lineTo(-35, 10 + tailWiggle);
+                    ctx.closePath();
+                    ctx.fill();
+                    
+                    // Eye
+                    ctx.fillStyle = '#ffffff';
+                    ctx.beginPath();
+                    ctx.arc(10, -3, 4, 0, Math.PI * 2);
+                    ctx.fill();
+                    ctx.fillStyle = '#000000';
+                    ctx.beginPath();
+                    ctx.arc(11, -3, 2, 0, Math.PI * 2);
+                    ctx.fill();
+                } else if (ent.subType === 'frog') {
+                    // Frog body
+                    ctx.fillStyle = '#66bb6a';
+                    ctx.beginPath();
+                    ctx.ellipse(0, 0, 20, 15, 0, 0, Math.PI * 2);
+                    ctx.fill();
+                    
+                    // Legs
+                    ctx.fillStyle = '#43a047';
+                    ctx.beginPath();
+                    ctx.ellipse(-12, 6, 12, 6, Math.PI/4, 0, Math.PI * 2);
+                    ctx.ellipse(12, 6, 8, 5, -Math.PI/4, 0, Math.PI * 2);
+                    ctx.fill();
+                    
+                    // Eyes
+                    ctx.fillStyle = '#ffffff';
+                    ctx.beginPath();
+                    ctx.arc(6, -11, 5, 0, Math.PI * 2);
+                    ctx.arc(-6, -11, 5, 0, Math.PI * 2);
+                    ctx.fill();
+                    ctx.fillStyle = '#000000';
+                    ctx.beginPath();
+                    ctx.arc(6, -11, 2, 0, Math.PI * 2);
+                    ctx.arc(-6, -11, 2, 0, Math.PI * 2);
+                    ctx.fill();
+                } else if (ent.subType === 'meat') {
+                    // Meat bone
+                    ctx.strokeStyle = '#ffffff';
+                    ctx.lineWidth = 6;
+                    ctx.lineCap = 'round';
+                    ctx.beginPath();
+                    ctx.moveTo(-18, 0);
+                    ctx.lineTo(18, 0);
+                    ctx.stroke();
+                    ctx.fillStyle = '#ffffff';
+                    ctx.beginPath();
+                    ctx.arc(-18, -4, 4, 0, Math.PI*2);
+                    ctx.arc(-18, 4, 4, 0, Math.PI*2);
+                    ctx.arc(18, -4, 4, 0, Math.PI*2);
+                    ctx.arc(18, 4, 4, 0, Math.PI*2);
+                    ctx.fill();
+                    
+                    // Meat body
+                    ctx.fillStyle = '#e64a19';
+                    ctx.beginPath();
+                    ctx.ellipse(0, 0, 18, 14, 0, 0, Math.PI * 2);
+                    ctx.fill();
+                    
+                    // Meat marble lines
+                    ctx.strokeStyle = '#ffcc80';
+                    ctx.lineWidth = 2.5;
+                    ctx.beginPath();
+                    ctx.arc(-4, 0, 8, -Math.PI/2, Math.PI/2);
+                    ctx.stroke();
+                } else if (ent.subType === 'meat') {
+                    // Meat bone
+                    ctx.strokeStyle = '#ffffff';
+                    ctx.lineWidth = 6;
+                    ctx.lineCap = 'round';
+                    ctx.beginPath();
+                    ctx.moveTo(-18, 0);
+                    ctx.lineTo(18, 0);
+                    ctx.stroke();
+                    ctx.fillStyle = '#ffffff';
+                    ctx.beginPath();
+                    ctx.arc(-18, -4, 4, 0, Math.PI*2);
+                    ctx.arc(-18, 4, 4, 0, Math.PI*2);
+                    ctx.arc(18, -4, 4, 0, Math.PI*2);
+                    ctx.arc(18, 4, 4, 0, Math.PI*2);
+                    ctx.fill();
+                    
+                    // Meat body
+                    ctx.fillStyle = '#e64a19';
+                    ctx.beginPath();
+                    ctx.ellipse(0, 0, 18, 14, 0, 0, Math.PI * 2);
+                    ctx.fill();
+                    
+                    // Meat marble lines
+                    ctx.strokeStyle = '#ffcc80';
+                    ctx.lineWidth = 2.5;
+                    ctx.beginPath();
+                    ctx.arc(-4, 0, 8, -Math.PI/2, Math.PI/2);
+                    ctx.stroke();
+                } else if (ent.subType === 'crab') {
+                    // Crab legs
+                    ctx.strokeStyle = '#d84315';
+                    ctx.lineWidth = 4;
+                    ctx.lineCap = 'round';
+                    for (let i = -1; i <= 1; i += 2) {
+                        ctx.beginPath();
+                        ctx.moveTo(i * 6, 4);
+                        ctx.quadraticCurveTo(i * 18, 12, i * 22, 4);
+                        ctx.stroke();
+                        
+                        ctx.beginPath();
+                        ctx.moveTo(i * 6, -4);
+                        ctx.quadraticCurveTo(i * 18, -12, i * 22, -4);
+                        ctx.stroke();
+                    }
+                    // Crab claws
+                    ctx.fillStyle = '#d84315';
+                    ctx.beginPath();
+                    ctx.arc(14, -14, 8, 0, Math.PI*2);
+                    ctx.arc(-14, -14, 8, 0, Math.PI*2);
+                    ctx.fill();
+                    ctx.beginPath();
+                    ctx.moveTo(10, -8); ctx.lineTo(14, -16); ctx.lineTo(18, -8); ctx.fill();
+                    ctx.moveTo(-10, -8); ctx.lineTo(-14, -16); ctx.lineTo(-18, -8); ctx.fill();
+                    // Crab body
+                    ctx.fillStyle = '#e64a19';
+                    ctx.beginPath();
+                    ctx.ellipse(0, 0, 18, 14, 0, 0, Math.PI * 2);
+                    ctx.fill();
+                    // Eyes
+                    ctx.fillStyle = '#ffffff';
+                    ctx.beginPath();
+                    ctx.arc(6, -15, 3.5, 0, Math.PI * 2);
+                    ctx.arc(-6, -15, 3.5, 0, Math.PI * 2);
+                    ctx.fill();
+                    ctx.fillStyle = '#000000';
+                    ctx.beginPath();
+                    ctx.arc(6, -15, 1.5, 0, Math.PI * 2);
+                    ctx.arc(-6, -15, 1.5, 0, Math.PI * 2);
+                    ctx.fill();
+                } else if (ent.subType === 'duckling') {
+                    // Body
+                    ctx.fillStyle = '#fdd835';
+                    ctx.beginPath();
+                    ctx.ellipse(0, 6, 20, 14, 0, 0, Math.PI*2);
+                    ctx.fill();
+                    // Head
+                    ctx.beginPath();
+                    ctx.arc(14, -8, 11, 0, Math.PI*2);
+                    ctx.fill();
+                    // Beak
+                    ctx.fillStyle = '#ff9800';
+                    ctx.beginPath();
+                    ctx.moveTo(23, -11);
+                    ctx.lineTo(32, -8);
+                    ctx.lineTo(23, -5);
+                    ctx.fill();
+                    // Wing (animated flapping)
+                    ctx.fillStyle = '#fbc02d';
+                    ctx.save();
+                    ctx.translate(-4, 4);
+                    ctx.rotate(Math.sin(ent.wiggle * 2) * 0.2);
+                    ctx.beginPath();
+                    ctx.ellipse(0, 0, 10, 6, 0, 0, Math.PI*2);
+                    ctx.fill();
+                    ctx.restore();
+                    // Eye
+                    ctx.fillStyle = '#000000';
+                    ctx.beginPath();
+                    ctx.arc(17, -10, 2, 0, Math.PI*2);
+                    ctx.fill();
+                } else if (ent.subType === 'dragonfly') {
+                    // Wings (transparent, animated)
+                    ctx.fillStyle = 'rgba(179, 229, 252, 0.6)';
+                    const wingSwing = Math.sin(ent.wiggle * 3) * 0.18;
+                    // Left wings
+                    ctx.save();
+                    ctx.rotate(-Math.PI/6 + wingSwing);
+                    ctx.beginPath(); ctx.ellipse(0, -18, 5, 20, Math.PI/12, 0, Math.PI*2); ctx.fill();
+                    ctx.restore();
+                    ctx.save();
+                    ctx.rotate(-Math.PI/3 + wingSwing);
+                    ctx.beginPath(); ctx.ellipse(0, -14, 4, 16, Math.PI/12, 0, Math.PI*2); ctx.fill();
+                    ctx.restore();
+                    // Right wings
+                    ctx.save();
+                    ctx.rotate(Math.PI/6 - wingSwing);
+                    ctx.beginPath(); ctx.ellipse(0, 18, 5, 20, -Math.PI/12, 0, Math.PI*2); ctx.fill();
+                    ctx.restore();
+                    ctx.save();
+                    ctx.rotate(Math.PI/3 - wingSwing);
+                    ctx.beginPath(); ctx.ellipse(0, 14, 4, 16, -Math.PI/12, 0, Math.PI*2); ctx.fill();
+                    ctx.restore();
+                    
+                    // Tail / Segmented body
+                    ctx.strokeStyle = '#0288d1';
+                    ctx.lineWidth = 5;
+                    ctx.lineCap = 'round';
+                    ctx.beginPath();
+                    ctx.moveTo(-4, 0);
+                    ctx.lineTo(-24, 0);
+                    ctx.stroke();
+                    // Thorax
+                    ctx.fillStyle = '#0288d1';
+                    ctx.beginPath();
+                    ctx.ellipse(0, 0, 8, 6, 0, 0, Math.PI*2);
+                    ctx.fill();
+                    // Head & large eyes
+                    ctx.fillStyle = '#01579b';
+                    ctx.beginPath();
+                    ctx.arc(6, 0, 5, 0, Math.PI*2);
+                    ctx.fill();
+                    ctx.fillStyle = '#80d8ff';
+                    ctx.beginPath();
+                    ctx.arc(7, -3, 2, 0, Math.PI*2);
+                    ctx.arc(7, 3, 2, 0, Math.PI*2);
+                    ctx.fill();
+                } else if (ent.subType === 'snail') {
+                    // Snail soft body
+                    ctx.fillStyle = '#ffe082';
+                    ctx.beginPath();
+                    ctx.ellipse(-4, 8, 18, 6, 0, 0, Math.PI*2);
+                    ctx.fill();
+                    // Snail tail
+                    ctx.beginPath();
+                    ctx.moveTo(-20, 8); ctx.lineTo(-26, 11); ctx.lineTo(-14, 11); ctx.fill();
+                    // Snail head
+                    ctx.beginPath();
+                    ctx.arc(12, 4, 6, 0, Math.PI*2);
+                    ctx.fill();
+                    // Eyestalks
+                    ctx.strokeStyle = '#ffe082';
+                    ctx.lineWidth = 2.5;
+                    ctx.beginPath();
+                    ctx.moveTo(12, 4); ctx.lineTo(16, -6);
+                    ctx.moveTo(10, 4); ctx.lineTo(11, -8);
+                    ctx.stroke();
+                    ctx.fillStyle = '#000000';
+                    ctx.beginPath();
+                    ctx.arc(16, -6, 1.2, 0, Math.PI*2);
+                    ctx.arc(11, -8, 1.2, 0, Math.PI*2);
+                    ctx.fill();
+                    // Shell (swirly)
+                    ctx.fillStyle = '#bcaaa4';
+                    ctx.beginPath();
+                    ctx.arc(-2, 0, 12, 0, Math.PI*2);
+                    ctx.fill();
+                    ctx.strokeStyle = '#5d4037';
+                    ctx.lineWidth = 2;
+                    ctx.beginPath();
+                    ctx.arc(-2, 0, 8, 0, Math.PI);
+                    ctx.stroke();
+                } else if (ent.subType === 'shrimp') {
+                    // Shrimp tail fan
+                    ctx.fillStyle = '#ffab91';
+                    ctx.beginPath();
+                    ctx.moveTo(-16, 0); ctx.lineTo(-24, -6); ctx.lineTo(-20, 0); ctx.lineTo(-24, 6); ctx.closePath();
+                    ctx.fill();
+                    // Curved segmented body
+                    ctx.save();
+                    ctx.translate(-2, 0);
+                    for (let i = 0; i < 4; i++) {
+                        ctx.translate(4, 0);
+                        ctx.beginPath();
+                        ctx.ellipse(0, 0, 6, 9 - i*1.2, 0, 0, Math.PI*2);
+                        ctx.fill();
+                    }
+                    ctx.restore();
+                    // Head
+                    ctx.beginPath();
+                    ctx.ellipse(14, 0, 8, 6, 0, 0, Math.PI*2);
+                    ctx.fill();
+                    // Eye
+                    ctx.fillStyle = '#000000';
+                    ctx.beginPath();
+                    ctx.arc(16, -2, 1.5, 0, Math.PI*2);
+                    ctx.fill();
+                    // Long feelers/antennas
+                    ctx.strokeStyle = '#ffab91';
+                    ctx.lineWidth = 1.5;
+                    ctx.beginPath();
+                    ctx.moveTo(18, 0);
+                    ctx.quadraticCurveTo(28, -12, 38, -16);
+                    ctx.moveTo(18, 2);
+                    ctx.quadraticCurveTo(28, 12, 38, 16);
+                    ctx.stroke();
                 } else if (ent.subType === 'turtle') {
                     // Flippers
                     ctx.fillStyle = '#81c784';
